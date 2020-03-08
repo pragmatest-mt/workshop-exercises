@@ -1,6 +1,5 @@
-package com.pragmatest.controller;
+package com.pragmatest.controllers;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,18 +13,18 @@ import java.net.URL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class MainControllerTest {
+public class SimpleControllerTest {
 
     @LocalServerPort
     private int port;
 
     @Autowired
-    private TestRestTemplate restTemplate;
+    private TestRestTemplate testRestTemplate;
 
     @Test
     void testGetName() throws MalformedURLException {
-        ResponseEntity<String> response = restTemplate.getForEntity(new URL("http://localhost:" + port + "/").toString(), String.class);
+        ResponseEntity<String> response = testRestTemplate.getForEntity(new URL("http://localhost:" + port + "/").toString(), String.class);
 
-        assertEquals("Clyde Vassallo", response.getBody());
+        assertEquals("John Smith", response.getBody());
     }
 }

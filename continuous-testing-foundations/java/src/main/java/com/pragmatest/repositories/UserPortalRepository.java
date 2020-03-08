@@ -1,4 +1,4 @@
-package com.pragmatest.repository;
+package com.pragmatest.repositories;
 
 public interface UserPortalRepository {
 

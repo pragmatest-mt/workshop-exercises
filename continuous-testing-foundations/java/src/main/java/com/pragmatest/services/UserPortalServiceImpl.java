@@ -1,7 +1,6 @@
 package com.pragmatest.services;
 
-import com.pragmatest.repository.UserPortalRepository;
-import com.pragmatest.services.UserPortalService;
+import com.pragmatest.repositories.UserPortalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

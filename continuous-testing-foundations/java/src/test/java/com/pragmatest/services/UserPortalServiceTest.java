@@ -16,6 +16,6 @@ public class UserPortalServiceTest {
     @DisplayName("Test Spring @Autowired Integration")
     @Test
     void testGetName() {
-        assertEquals("Clyde Vassallo", userPortalService.getName());
+        assertEquals("John Smith", userPortalService.getName());
     }
 }

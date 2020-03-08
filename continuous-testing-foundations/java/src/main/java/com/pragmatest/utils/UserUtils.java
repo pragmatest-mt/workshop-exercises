@@ -2,8 +2,8 @@ package com.pragmatest.utils;
 
 public class UserUtils {
 
-
     public String generateFullName(String firstName, String lastName) {
+
         return firstName + " " + lastName;
     }
 
