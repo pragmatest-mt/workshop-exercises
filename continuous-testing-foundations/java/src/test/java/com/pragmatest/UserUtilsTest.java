@@ -3,6 +3,7 @@ package com.pragmatest;
 import com.pragmatest.utils.UserUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -14,29 +15,43 @@ public class UserUtilsTest {
 
     @BeforeEach
     void init() {
+        // Arrange
         userUtils = new UserUtils();
     }
 
     @Test
-    void testGenerateFullName() {
-        String expectedName = "John Smith";
+    void testIsAdultAgeUnder18() {
+        // Arrange
+        int age = 17;
 
-        assertEquals(expectedName, userUtils.generateFullName("John", "Smith"));
-    }
+        // Act
+        boolean isAdult = userUtils.isAdult(age);
 
-    @Test
-    void testIsOver18() {
-        assertAll(
-                () -> assertTrue(userUtils.isOver18(20)),
-                () -> assertFalse(userUtils.isOver18(15)),
-                () -> assertThrows(IllegalArgumentException.class, () -> userUtils.isOver18(0))
-
-        );
+        // Assert
+        assertFalse(isAdult);
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {18, 40, 50})
-    void testOver18(int age){
-        assertTrue(userUtils.isOver18(age));
+    // Arrange
+    @ValueSource(ints = {18, 19})
+    void testIsAdultAgeIsOver18(int age) {
+        // Act
+        boolean isAdult = userUtils.isAdult(age);
+
+        // Assert
+        assertTrue(isAdult);
+    }
+
+    @Test
+    void testIsAdultAge0() {
+        // Act
+        Executable executable = () -> {
+            userUtils.isAdult(0);
+        };
+
+        // Assert
+        assertThrows(IllegalArgumentException.class, executable);
     }
 }
+
+

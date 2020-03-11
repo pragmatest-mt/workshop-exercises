@@ -10,13 +10,14 @@ import java.io.IOException;
 
 @ControllerAdvice
 public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
     @ExceptionHandler(UserNotFoundException.class)
-    public void springHandleNotFound(HttpServletResponse response) throws IOException {
+    public void handleUserNotFound(HttpServletResponse response) throws IOException {
         response.sendError(HttpStatus.NOT_FOUND.value());
     }
 
-    @ExceptionHandler(UserUnsupportedPatchException.class)
-    public void springUnSupportedFieldPatch(HttpServletResponse response) throws IOException {
-        response.sendError(HttpStatus.METHOD_NOT_ALLOWED.value());
+    @ExceptionHandler(UserInvalidException.class)
+    public void handleUserInvalid(HttpServletResponse response) throws IOException {
+        response.sendError(HttpStatus.BAD_REQUEST.value());
     }
 }

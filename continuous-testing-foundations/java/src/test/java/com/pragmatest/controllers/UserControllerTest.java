@@ -3,7 +3,8 @@ package com.pragmatest.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pragmatest.models.User;
-import com.pragmatest.repositories.jpa.UserRepository;
+import com.pragmatest.services.UserService;
+import com.pragmatest.utils.UserMatcher;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,139 +33,153 @@ public class UserControllerTest {
     private TestRestTemplate testRestTemplate;
 
     @MockBean
-    private UserRepository userMockRepository;
+    private UserService userMockService;
 
     @BeforeEach
     public void init() {
+        // Arrange
         User user = new User(1L, "John Smith", "London", 23);
-        when(userMockRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userMockService.getUserById(1L)).thenReturn(Optional.of(user));
     }
 
     @Test
-    public void findUserIdOK() throws JSONException {
-        String expected = "{id:1, fullName:\"John Smith\", locality:\"London\", age:23}";
+    public void testGetUserByIdValidId() throws JSONException {
+        // Arrange
+        String expectedResponseBody = "{id:1, fullName:\"John Smith\", locality:\"London\", age:23}";
+        String endpoint = "/users/1";
 
-        ResponseEntity<String> responseEntity = testRestTemplate.getForEntity("/users/1", String.class);
+        // Act
+        ResponseEntity<String> responseEntity = testRestTemplate.getForEntity(endpoint, String.class);
 
+        // Assert
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(MediaType.APPLICATION_JSON_UTF8, responseEntity.getHeaders().getContentType());
 
-        JSONAssert.assertEquals(expected, responseEntity.getBody(), false);
+        JSONAssert.assertEquals(expectedResponseBody, responseEntity.getBody(), false);
 
-        verify(userMockRepository, times(1)).findById(1L);
+        verify(userMockService, times(1)).getUserById(1L);
     }
 
     @Test
-    public void findAllUsersOK() throws JsonProcessingException, JSONException {
+    public void testGetUsersByIdValidIds() throws JsonProcessingException, JSONException {
+        // Arrange
         List<User> users = Arrays.asList(
                 new User(1L, "John Smith", "London", 23),
-                new User(1L, "Mary Walsh", "Liverpool", 30));
+                new User(2L, "Mary Walsh", "Liverpool", 30));
 
-        when(userMockRepository.findAll()).thenReturn(users);
+        when(userMockService.getAllUsers()).thenReturn(users);
 
-        String expected = om.writeValueAsString(users);
+        String expectedUserList = om.writeValueAsString(users);
+        String endpoint = "/users";
 
-        ResponseEntity<String> responseEntity = testRestTemplate.getForEntity("/users", String.class);
+        // Act
+        ResponseEntity<String> responseEntity = testRestTemplate.getForEntity(endpoint, String.class);
 
+        // Assert
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(MediaType.APPLICATION_JSON_UTF8, responseEntity.getHeaders().getContentType());
 
-        JSONAssert.assertEquals(expected, responseEntity.getBody(), false);
+        JSONAssert.assertEquals(expectedUserList, responseEntity.getBody(), false);
 
-        verify(userMockRepository, times(1)).findAll();
+        verify(userMockService, times(1)).getAllUsers();
     }
 
     @Test
-    public void findUserIdNotFound404() throws Exception {
+    public void testGetUserByIdInvalidId() throws Exception {
+        // Arrange
+        String expectedResponseBody = "{status:404,error:\"Not Found\",message:\"User with ID '5' not found.\",path:\"/users/5\"}";
 
-        String expected = "{status:404,error:\"Not Found\",message:\"User with ID '5' not found.\",path:\"/users/5\"}";
+        String endpoint = "/users/5";
 
-        ResponseEntity<String> response = testRestTemplate.getForEntity("/users/5", String.class);
+        // Act
+        ResponseEntity<String> response = testRestTemplate.getForEntity(endpoint, String.class);
 
+        // Assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        JSONAssert.assertEquals(expected, response.getBody(), false);
+        JSONAssert.assertEquals(expectedResponseBody, response.getBody(), false);
     }
 
     @Test
-    public void saveUserOK() throws Exception {
+    public void testSaveUserValidUser() throws Exception {
+        // Arrange
         User newUser = new User(1L, "Marisa Jones", "Newcastle", 20);
-        when(userMockRepository.save(any(User.class))).thenReturn(newUser);
+        when(userMockService.saveUser(argThat(new UserMatcher(newUser)))).thenReturn(Optional.of(newUser));
 
-        String expected = om.writeValueAsString(newUser);
+        String expectedResponseBody = om.writeValueAsString(newUser);
 
-        ResponseEntity<String> response = testRestTemplate.postForEntity("/users", newUser, String.class);
+        String endpoint = "/users";
 
+        // Act
+        ResponseEntity<String> response = testRestTemplate.postForEntity(endpoint, newUser, String.class);
+//        userController.newUser(newUser);
+
+        // Assert
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        JSONAssert.assertEquals(expected, response.getBody(), false);
+        JSONAssert.assertEquals(expectedResponseBody, response.getBody(), false);
 
-        verify(userMockRepository, times(1)).save(any(User.class));
+        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(newUser)));
     }
 
     @Test
-    public void updateUserOK() throws Exception {
+    public void testSaveUserInvalidUser() throws JSONException {
+        // Arrange
+        User newUser = new User(1L, "Jane Stark", "Newcastle", 17);
+        when(userMockService.saveUser(argThat(new UserMatcher(newUser)))).thenReturn(Optional.empty());
+
+        String expectedResponseBody = "{status:400,error:\"Bad Request\",message:\"Invalid User\"}";
+
+        String endpoint = "/users";
+
+        // Act
+        ResponseEntity<String> response = testRestTemplate.postForEntity(endpoint, newUser, String.class);
+
+        //Assert
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        JSONAssert.assertEquals(expectedResponseBody, response.getBody(), false);
+
+        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(newUser)));
+    }
+
+
+    @Test
+    public void testUpdateUserValidUser() throws Exception {
+        // Arrange
         User updateUser = new User(1L, "Peter Marshall", "London", 40);
-        when(userMockRepository.save(any(User.class))).thenReturn(updateUser);
+        when(userMockService.saveUser(argThat(new UserMatcher(updateUser)))).thenReturn(Optional.of(updateUser));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         HttpEntity<String> entity = new HttpEntity<>(om.writeValueAsString(updateUser), headers);
 
-        ResponseEntity<String> response = testRestTemplate.exchange("/users/1", HttpMethod.PUT, entity, String.class);
+        String endpoint = "/users/1";
 
+        // Act
+        ResponseEntity<String> response = testRestTemplate.exchange(endpoint, HttpMethod.PUT, entity, String.class);
+
+        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         JSONAssert.assertEquals(om.writeValueAsString(updateUser), response.getBody(), false);
 
-        verify(userMockRepository, times(1)).findById(1L);
-        verify(userMockRepository, times(1)).save(any(User.class));
+        verify(userMockService, times(1)).getUserById(1L);
+        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(updateUser)));
     }
 
     @Test
-    public void patchUserLocalityOK() throws JSONException {
-        when(userMockRepository.save(any(User.class))).thenReturn(new User());
-
-        String patchInJson = "{\"locality\":\"Chicago\"}";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> entity = new HttpEntity<>(patchInJson, headers);
-
-        ResponseEntity<String> response = testRestTemplate.exchange("/users/1", HttpMethod.PUT, entity, String.class);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-
-        verify(userMockRepository, times(1)).findById(1L);
-        verify(userMockRepository, times(1)).save(any(User.class));
-    }
-
-    @Test
-    public void patchUserFullName405() throws JSONException {
-        String expected = "{status:405,error:\"Method Not Allowed\",message:\"No update is allowed on fields '[fullName]'\"}";
-
-        String patchInJson = "{\"fullName\":\"Michael Styles\"}";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> entity = new HttpEntity<>(patchInJson, headers);
-
-        ResponseEntity<String> response = testRestTemplate.exchange("/users/1", HttpMethod.PATCH, entity, String.class);
-
-        assertEquals(HttpStatus.METHOD_NOT_ALLOWED, response.getStatusCode());
-        JSONAssert.assertEquals(expected, response.getBody(), false);
-
-        verify(userMockRepository, times(1)).findById(1L);
-        verify(userMockRepository, times(0)).save(any(User.class));
-    }
-
-    @Test
-    public void deleteUserOK(){
-        doNothing().when(userMockRepository).deleteById(1L);
+    public void testDeleteUserValidUser() {
+        // Arrange
+        doNothing().when(userMockService).deleteUserById(1L);
 
         HttpEntity<String> entity = new HttpEntity<>(null, new HttpHeaders());
-        ResponseEntity<String> response = testRestTemplate.exchange("/users/1", HttpMethod.DELETE, entity, String.class);
 
+        String endpoint = "/users/1";
+
+        // Act
+        ResponseEntity<String> response = testRestTemplate.exchange(endpoint, HttpMethod.DELETE, entity, String.class);
+
+        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
-        verify(userMockRepository, times(1)).deleteById(1L);
+        verify(userMockService, times(1)).deleteUserById(1L);
     }
 }

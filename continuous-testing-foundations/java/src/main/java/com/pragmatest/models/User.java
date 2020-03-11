@@ -3,6 +3,7 @@ package com.pragmatest.models;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import java.util.Objects;
 
 @Entity
 public class User {
@@ -10,6 +11,7 @@ public class User {
     @Id
     @GeneratedValue
     private Long id;
+
     private String fullName;
     private String locality;
     private int age;
@@ -62,6 +64,4 @@ public class User {
     public void setLocality(String locality) {
         this.locality = locality;
     }
-
-
 }
