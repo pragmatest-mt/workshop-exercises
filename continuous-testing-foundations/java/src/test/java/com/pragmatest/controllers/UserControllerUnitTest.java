@@ -1,13 +1,14 @@
 package com.pragmatest.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pragmatest.exceptions.UserInvalidException;
+import com.pragmatest.exceptions.UserNotFoundException;
 import com.pragmatest.matchers.UserMatcher;
 import com.pragmatest.models.User;
 import com.pragmatest.models.UserRequest;
 import com.pragmatest.services.UserService;
-import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -17,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -33,7 +34,7 @@ public class UserControllerUnitTest {
     private UserService userMockService;
 
     @Test
-    public void testGetUserByIdValidId() throws JSONException {
+    public void testGetUserByIdValidId() {
         // Arrange
         User user = new User("John Smith", "London", 23);
         when(userMockService.getUserById(1L)).thenReturn(Optional.of(user));
@@ -48,7 +49,7 @@ public class UserControllerUnitTest {
     }
 
     @Test
-    public void testGetUsersValidUsers() throws JsonProcessingException, JSONException {
+    public void testGetUsersValidUsers() {
         // Arrange
         List<User> users = Arrays.asList(
                 new User("John Smith", "London", 23),
@@ -60,24 +61,23 @@ public class UserControllerUnitTest {
 
         verify(userMockService, times(1)).getAllUsers();
     }
-//
-//    @Test
-//    public void testGetUserByIdInvalidId() throws Exception {
-//        // Arrange
-//        String expectedResponseBody = "{status:404,error:\"Not Found\",message:\"User with ID '5' not found.\",path:\"/users/5\"}";
-//
-//        String endpoint = "/users/5";
-//
-//        // Act
-//        ResponseEntity<String> response = testRestTemplate.getForEntity(endpoint, String.class);
-//
-//        // Assert
-//        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-//        JSONAssert.assertEquals(expectedResponseBody, response.getBody(), false);
-//    }
-//
+
     @Test
-    public void testSaveUserValidUser() throws Exception {
+    public void testGetUserByIdNonExistentId() {
+        when(userMockService.getUserById(1L)).thenReturn(Optional.empty());
+
+        Executable executable = () -> {
+            userController.findOne(1L);
+        };
+
+        assertThrows(UserNotFoundException.class, executable);
+
+        verify(userMockService, times(1)).getUserById(1L);
+    }
+
+    //
+    @Test
+    public void testSaveUserValidUser() {
         // Arrange
         User newUser = new User("Marisa Jones", "Newcastle", 20);
         when(userMockService.saveUser(argThat(new UserMatcher(newUser)))).thenReturn(Optional.of(newUser));
@@ -90,28 +90,28 @@ public class UserControllerUnitTest {
 
         verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(newUser)));
     }
-//
-//    @Test
-//    public void testSaveUserInvalidUser() throws JSONException {
-//        // Arrange
-//        UserEntity newUserEntity = new UserEntity(1L, "Jane Stark", "Newcastle", 17);
-//        when(userMockService.saveUser(argThat(new UserMatcher(newUserEntity)))).thenReturn(Optional.empty());
-//
-//        String expectedResponseBody = "{status:400,error:\"Bad Request\",message:\"Invalid User\"}";
-//
-//        String endpoint = "/users";
-//
-//        // Act
-//        ResponseEntity<String> response = testRestTemplate.postForEntity(endpoint, newUserEntity, String.class);
-//
-//        //Assert
-//        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-//        JSONAssert.assertEquals(expectedResponseBody, response.getBody(), false);
-//
-//        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(newUserEntity)));
-//    }
-//
-//
+
+    @Test
+    public void testSaveUserInvalidUser() {
+        // Arrange
+        User newUser = new User("Jane Stark", "Newcastle", 17);
+        when(userMockService.saveUser(argThat(new UserMatcher(newUser)))).thenReturn(Optional.empty());
+
+        UserRequest userRequest = new UserRequest();
+        userRequest.setFullName("Jane Stark");
+        userRequest.setAge(17);
+        userRequest.setLocality("Newcastle");
+
+        Executable executable = () -> {
+            userController.newUser(userRequest);
+        };
+
+        assertThrows(UserInvalidException.class, executable);
+
+        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(newUser)));
+    }
+
+
 //    @Test
 //    public void testUpdateUserValidUser() throws Exception {
 //        // Arrange
@@ -153,4 +153,5 @@ public class UserControllerUnitTest {
 //
 //        verify(userMockService, times(1)).deleteUserById(1L);
 //    }
+
 }
