@@ -3,13 +3,17 @@ package com.pragmatest.controllers;
 import com.pragmatest.exceptions.UserInvalidException;
 import com.pragmatest.exceptions.UserNotFoundException;
 import com.pragmatest.models.User;
+import com.pragmatest.models.UserRequest;
+import com.pragmatest.models.UserResponse;
 import com.pragmatest.services.UserService;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.Type;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class UserController {
@@ -17,39 +21,58 @@ public class UserController {
     @Autowired
     UserService userService;
 
-    @GetMapping("/users")
-    List<User> findAll() {
+    @Autowired
+    ModelMapper modelMapper;
 
-        return userService.getAllUsers();
+    @GetMapping("/users")
+    List<UserResponse> findAll() {
+
+        List<User> users = userService.getAllUsers();
+
+        Type responseType = new TypeToken<List<UserResponse>>() {
+        }.getType();
+
+        List<UserResponse> response = modelMapper.map(users, responseType);
+
+        return response;
     }
 
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
-    User newUser(@RequestBody User newUser) {
+    UserResponse newUser(@RequestBody UserRequest userRequest) {
 
-        return userService.saveUser(newUser).orElseThrow(() -> new UserInvalidException());
+        User user = modelMapper.map(userRequest, User.class);
+
+        user = userService.saveUser(user).orElseThrow(() -> new UserInvalidException());
+
+        UserResponse userResponse = modelMapper.map(user, UserResponse.class);
+
+        return userResponse;
     }
 
     @GetMapping("/users/{id}")
-    User findOne(@PathVariable Long id) {
-        return userService.getUserById(id).orElseThrow(() -> new UserNotFoundException(id));
+    UserResponse findOne(@PathVariable Long id) {
+
+        User user = userService.getUserById(id).orElseThrow(() -> new UserNotFoundException(id));
+
+        UserResponse response = modelMapper.map(user, UserResponse.class);
+
+        return response;
     }
 
     @PutMapping("/users/{id}")
-    User saveOrUpdate(@RequestBody User newUser, @PathVariable Long id) {
+    UserResponse saveOrUpdate(@RequestBody UserRequest userRequest, @PathVariable Long id) {
 
-        Optional<User> user = userService.getUserById(id);
+        User existentUser = userService.getUserById(id).orElseThrow(() -> new UserNotFoundException(id));
 
-        return user.map(x -> {
-            x.setFullName(newUser.getFullName());
-            x.setAge(newUser.getAge());
-            x.setLocality(newUser.getLocality());
+        User newUser = modelMapper.map(userRequest, User.class);
 
-            return userService.saveUser(newUser).orElseThrow(() -> new UserInvalidException());
-        }).orElseGet(() -> {
-            newUser.setId(id);
-            return userService.saveUser(newUser).orElseThrow(() -> new UserInvalidException());
-        });
+        newUser.setId(existentUser.getId());
+        User updatedUser = userService.saveUser(newUser).orElseThrow(() -> new UserInvalidException());
+
+        UserResponse userResponse = modelMapper.map(updatedUser, UserResponse.class);
+
+        return userResponse;
     }
 
     @DeleteMapping("/users/{id}")

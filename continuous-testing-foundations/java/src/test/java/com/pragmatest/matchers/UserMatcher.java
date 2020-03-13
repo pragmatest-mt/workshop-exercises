@@ -1,6 +1,7 @@
-package com.pragmatest.utils;
+package com.pragmatest.matchers;
 
 import com.pragmatest.models.User;
+import com.pragmatest.models.UserEntity;
 import org.mockito.ArgumentMatcher;
 
 public class UserMatcher implements ArgumentMatcher<User> {

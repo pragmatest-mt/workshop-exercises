@@ -1,29 +1,11 @@
 package com.pragmatest.models;
 
-public class User {
 
-    private Long Id;
+public class UserRequest {
 
     private String fullName;
     private String locality;
     private int age;
-
-    public User() {
-    }
-
-    public User(String fullName, String locality, int age) {
-        this.fullName = fullName;
-        this.locality = locality;
-        this.age = age;
-    }
-
-    public Long getId() {
-        return Id;
-    }
-
-    public void setId(Long id) {
-        Id = id;
-    }
 
     public String getFullName() {
         return fullName;

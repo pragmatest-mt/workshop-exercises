@@ -1,14 +1,17 @@
 package com.pragmatest.services;
 
 import com.pragmatest.models.User;
+import com.pragmatest.models.UserEntity;
 import com.pragmatest.repositories.UserRepository;
 import org.junit.jupiter.api.Test;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.ArrayList;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,10 +19,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
-
 @SpringBootTest
 @ActiveProfiles("test")
-public class UserServiceTest {
+public class UserEntityServiceTest {
 
     @MockBean
     UserRepository userMockRepository;
@@ -27,47 +29,56 @@ public class UserServiceTest {
     @Autowired
     UserService userService;
 
+    @Autowired
+    ModelMapper modelMapper;
+
     @Test
     void testSaveUserValidUser() {
         // Arrange
-        User newUser = new User("John Smith", "London", 20);
-        when(userMockRepository.save(newUser)).thenReturn(newUser);
+        UserEntity newUserEntity = new UserEntity("John Smith", "London", 20);
+        when(userMockRepository.save(newUserEntity)).thenReturn(newUserEntity);
+
+        User user = modelMapper.map(newUserEntity, User.class);
 
         // Act
-        Optional<User> returnedNewUser = userService.saveUser(newUser);
+        Optional<User> returnedNewUser = userService.saveUser(user);
 
         // Assert
-        assertEquals(newUser, returnedNewUser.get());
+        assertEquals(newUserEntity, returnedNewUser.get());
 
-        verify(userMockRepository, times(1)).save(newUser);
+        verify(userMockRepository, times(1)).save(newUserEntity);
     }
 
     @Test
     void testSaveUserInvalidUser() {
         // Arrange
-        User newUser = new User("John Smith", "London", 17);
-        when(userMockRepository.save(newUser)).thenReturn(newUser);
+        UserEntity newUserEntity = new UserEntity("John Smith", "London", 17);
+        when(userMockRepository.save(newUserEntity)).thenReturn(newUserEntity);
+
+        User user = modelMapper.map(newUserEntity, User.class);
 
         // Act
-        Optional<User> returnedNewUser = userService.saveUser(newUser);
+        Optional<User> returnedNewUser = userService.saveUser(user);
 
         //Assert
         assertEquals(returnedNewUser, Optional.empty());
 
-        verify(userMockRepository, times(0)).save(any(User.class));
+        verify(userMockRepository, times(0)).save(any(UserEntity.class));
     }
 
     @Test
     void testGetUserByIdValidId() {
         //Arrange
-        User newUser = new User(1L, "John Smith", "London", 25);
-        when(userMockRepository.findById(1L)).thenReturn(Optional.of(newUser));
+        UserEntity newUserEntity = new UserEntity(1L, "John Smith", "London", 25);
+        when(userMockRepository.findById(1L)).thenReturn(Optional.of(newUserEntity));
+
+        User expectedUser = modelMapper.map(newUserEntity, User.class);
 
         // Act
         Optional<User> returnedUser = userService.getUserById(1L);
 
         //Assert
-        assertEquals(newUser, returnedUser.get());
+        assertEquals(expectedUser, returnedUser.get());
 
         verify(userMockRepository, times(1)).findById(1L);
     }
@@ -89,12 +100,16 @@ public class UserServiceTest {
     @Test
     void testGetAllUsersValidUsers() {
         //Arrange
-        List<User> expectedUsersList = List.of(
-            new User("John Smith", "London", 45),
-            new User("Mary Jones", "Manchester", 60)
+        List<UserEntity> usersList = List.of(
+            new UserEntity("John Smith", "London", 45),
+            new UserEntity("Mary Jones", "Manchester", 60)
         );
-        when(userMockRepository.findAll()).thenReturn(expectedUsersList);
+        when(userMockRepository.findAll()).thenReturn(usersList);
 
+        Type userListType = new TypeToken<List<User>>() {
+        }.getType();
+
+        List<User> expectedUsersList = modelMapper.map(usersList, userListType);
 
         // Act
         List<User> actualUsersList = userService.getAllUsers();
@@ -104,6 +119,4 @@ public class UserServiceTest {
 
         verify(userMockRepository, times(1)).findAll();
     }
-
-
 }

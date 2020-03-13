@@ -1,7 +1,7 @@
 package com.pragmatest.repositories;
 
-import com.pragmatest.models.User;
+import com.pragmatest.models.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
 }
