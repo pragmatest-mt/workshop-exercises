@@ -24,8 +24,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest()
-@ActiveProfiles("test")
+@SpringBootTest
 @AutoConfigureMockMvc
 public class UserControllerIntegrationTestMockMvc {
 
@@ -88,7 +87,6 @@ public class UserControllerIntegrationTestMockMvc {
     @Test
     public void testGetUserByIdInvalidId() throws Exception {
         // Arrange
-        //String expectedResponseBody = "{status:404,error:\"Not Found\",message:\"User with ID '5' not found.\",path:\"/users/5\"}";
         String endpoint = "/users/5";
 
         // Act
