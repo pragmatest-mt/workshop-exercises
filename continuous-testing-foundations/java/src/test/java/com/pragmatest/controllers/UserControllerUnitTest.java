@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -60,7 +61,6 @@ public class UserControllerUnitTest {
 
         when(userMockService.getAllUsers()).thenReturn(users);
 
-
         UserResponse expectedUserResponse1 = new UserResponse(1L, "John Smith", "London", 23);
         UserResponse expectedUserResponse2 = new UserResponse(2L, "Mary Walsh", "Liverpool", 30);
 
@@ -69,9 +69,15 @@ public class UserControllerUnitTest {
 
         // Assert
         //check on this
-        assertTrue(actualResponse.contains(expectedUserResponse1));
-        assertTrue(actualResponse.contains(expectedUserResponse2));
-        assertEquals(2, actualResponse.size());
+        assertThat(actualResponse)
+                .extracting(UserResponse::getId,UserResponse::getFullName,
+                        UserResponse::getLocality, UserResponse::getAge)
+                .containsExactly(
+                        tuple(expectedUserResponse1.getId(), expectedUserResponse1.getFullName(),
+                                expectedUserResponse1.getLocality(), expectedUserResponse1.getAge()),
+                        tuple(expectedUserResponse2.getId(), expectedUserResponse2.getFullName(),
+                                expectedUserResponse2.getLocality(), expectedUserResponse2.getAge())
+                );
 
         verify(userMockService, times(1)).getAllUsers();
     }
