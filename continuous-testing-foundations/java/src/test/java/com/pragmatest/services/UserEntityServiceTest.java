@@ -1,8 +1,12 @@
 package com.pragmatest.services;
 
+import com.pragmatest.matchers.UserEntityMatcher;
+import com.pragmatest.matchers.UserMatcher;
 import com.pragmatest.models.User;
 import com.pragmatest.models.UserEntity;
 import com.pragmatest.repositories.UserRepository;
+import org.hamcrest.Matchers;
+import org.hamcrest.collection.IsIterableContainingInAnyOrder;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -15,8 +19,8 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
@@ -35,18 +39,21 @@ public class UserEntityServiceTest {
     @Test
     void testSaveUserValidUser() {
         // Arrange
-        UserEntity newUserEntity = new UserEntity("John Smith", "London", 20);
-        when(userMockRepository.save(newUserEntity)).thenReturn(newUserEntity);
+        UserEntity inputUserEntity = new UserEntity("John Smith", "London", 20);
+        UserEntity outputUserEntity = new UserEntity(1L, "John Smith", "London", 20);
+        when(userMockRepository.save(argThat(new UserEntityMatcher(inputUserEntity)))).thenReturn(outputUserEntity);
 
-        User user = modelMapper.map(newUserEntity, User.class);
+        User serviceUserInput = new User("John Smith", "London", 20);
+        User serviceUserOutput = new User(1L, "John Smith", "London", 20);
 
         // Act
-        Optional<User> returnedNewUser = userService.saveUser(user);
+        Optional<User> actualUser = userService.saveUser(serviceUserInput);
 
         // Assert
-        assertEquals(newUserEntity, returnedNewUser.get());
+        assertFalse(actualUser.isEmpty());
+        assertThat(actualUser.get()).isEqualToComparingFieldByField(serviceUserOutput);
 
-        verify(userMockRepository, times(1)).save(newUserEntity);
+        verify(userMockRepository, times(1)).save(argThat(new UserEntityMatcher(inputUserEntity)));
     }
 
     @Test
@@ -75,11 +82,11 @@ public class UserEntityServiceTest {
         User expectedUser = modelMapper.map(newUserEntity, User.class);
 
         // Act
-        Optional<User> returnedUser = userService.getUserById(1L);
+        Optional<User> actualUser = userService.getUserById(1L);
 
         //Assert
-        assertEquals(expectedUser, returnedUser.get());
-
+        assertFalse(actualUser.isEmpty());
+        assertThat(actualUser.get()).isEqualToComparingFieldByField(expectedUser);
         verify(userMockRepository, times(1)).findById(1L);
     }
 
@@ -116,7 +123,6 @@ public class UserEntityServiceTest {
 
         // Assert
         assertEquals(expectedUsersList, actualUsersList);
-
         verify(userMockRepository, times(1)).findAll();
     }
 }
