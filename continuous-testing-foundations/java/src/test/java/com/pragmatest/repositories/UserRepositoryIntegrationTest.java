@@ -45,9 +45,9 @@ public class UserRepositoryIntegrationTest {
         userEntity1.setAge(20);
 
         UserEntity userEntity2 = new UserEntity();
-        userEntity2.setFullName("John Smith");
-        userEntity2.setLocality("London");
-        userEntity2.setAge(20);
+        userEntity2.setFullName("Mary Jones");
+        userEntity2.setLocality("Manchester");
+        userEntity2.setAge(24);
 
         testEntityManager.persist(userEntity1);
         testEntityManager.persist(userEntity2);
@@ -59,8 +59,9 @@ public class UserRepositoryIntegrationTest {
         List<UserEntity> retrievedUsers = userRepository.findAll();
 
         assertFalse(retrievedUsers.isEmpty());
-
-        //FIND A WAY TO ASSERT CONTENT!!!!!!!!
+        assertTrue(retrievedUsers.contains(userEntity1));
+        assertTrue(retrievedUsers.contains(userEntity2));
+        assertEquals(2, retrievedUsers.size());
     }
 
     @Test

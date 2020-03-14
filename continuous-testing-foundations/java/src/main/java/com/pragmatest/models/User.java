@@ -3,12 +3,18 @@ package com.pragmatest.models;
 public class User {
 
     private Long Id;
-
     private String fullName;
     private String locality;
     private int age;
 
     public User() {
+    }
+
+    public User(Long id, String fullName, String locality, int age) {
+        this.setId(id);
+        this.fullName = fullName;
+        this.locality = locality;
+        this.age = age;
     }
 
     public User(String fullName, String locality, int age) {

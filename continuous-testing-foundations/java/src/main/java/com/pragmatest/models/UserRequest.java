@@ -7,6 +7,16 @@ public class UserRequest {
     private String locality;
     private int age;
 
+    public UserRequest() {
+
+    }
+
+    public UserRequest(String fullName, String locality, int age) {
+        this.fullName = fullName;
+        this.locality = locality;
+        this.age = age;
+    }
+
     public String getFullName() {
         return fullName;
     }
