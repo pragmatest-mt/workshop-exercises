@@ -1,10 +1,14 @@
 package com.pragmatest.repositories;
 
 import com.pragmatest.models.UserEntity;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
@@ -14,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class UserRepositoryIntegrationTest {
 
     @Autowired
@@ -22,44 +27,44 @@ public class UserRepositoryIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
-    @Test
-    void testFindUserById() {
-        UserEntity userEntity = new UserEntity();
-        userEntity.setFullName("John Smith");
-        userEntity.setLocality("London");
-        userEntity.setAge(20);
+    UserEntity userEntity1;
+    UserEntity userEntity2;
 
-        testEntityManager.persistAndFlush(userEntity);
-
-        assertNotNull(userEntity.getId());
-
-        Optional<UserEntity> retrievedUser = userRepository.findById(userEntity.getId());
-
-        assertFalse(retrievedUser.isEmpty());
-        assertEquals(userEntity, retrievedUser.get());
-    }
-
-    @Test
-    void testFindUsersById() {
-        UserEntity userEntity1 = new UserEntity();
+    public UserRepositoryIntegrationTest() {
+        userEntity1 = new UserEntity();
         userEntity1.setFullName("John Smith");
         userEntity1.setLocality("London");
         userEntity1.setAge(20);
 
-        UserEntity userEntity2 = new UserEntity();
+        userEntity2 = new UserEntity();
         userEntity2.setFullName("Mary Jones");
         userEntity2.setLocality("Manchester");
         userEntity2.setAge(24);
-
+    }
+    @BeforeEach
+    void beforeTest() {
+        // Arrange
         testEntityManager.persist(userEntity1);
         testEntityManager.persist(userEntity2);
         testEntityManager.flush();
+    }
 
-        assertNotNull(userEntity1.getId());
-        assertNotNull(userEntity2.getId());
+    @Test
+    void testFindUserById() {
+        // Act
+        Optional<UserEntity> retrievedUser = userRepository.findById(1L);
 
+        // Assert
+        assertFalse(retrievedUser.isEmpty());
+        assertEquals(userEntity1, retrievedUser.get());
+    }
+
+    @Test
+    void testFindAllUsers() {
+        // Act
         List<UserEntity> retrievedUsers = userRepository.findAll();
 
+        // Assert
         assertFalse(retrievedUsers.isEmpty());
         assertTrue(retrievedUsers.contains(userEntity1));
         assertTrue(retrievedUsers.contains(userEntity2));
@@ -68,25 +73,18 @@ public class UserRepositoryIntegrationTest {
 
     @Test
     void testFindUserByNonExistentId() {
-        Optional<UserEntity> retrievedUser = userRepository.findById(1L);
+        // Act
+        Optional<UserEntity> retrievedUser = userRepository.findById(3L);
 
+        // Assert
         assertTrue(retrievedUser.isEmpty());
     }
 
     @Test
     void testDeleteUser() {
-        UserEntity userEntity = new UserEntity();
-        userEntity.setFullName("John Smith");
-        userEntity.setLocality("London");
-        userEntity.setAge(20);
+        Long id = userEntity1.getId();
 
-        testEntityManager.persistAndFlush(userEntity);
-
-        assertNotNull(userEntity.getId());
-
-        Long id = userEntity.getId();
-
-        userRepository.delete(userEntity);
+        userRepository.delete(userEntity1);
 
         UserEntity retrievedUserEntity = testEntityManager.find(UserEntity.class, id);
 
