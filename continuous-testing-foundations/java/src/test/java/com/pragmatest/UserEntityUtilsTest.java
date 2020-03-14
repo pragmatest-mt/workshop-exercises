@@ -1,5 +1,6 @@
 package com.pragmatest;
 
+import com.pragmatest.exceptions.UserInvalidException;
 import com.pragmatest.utils.UserUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,7 +51,7 @@ public class UserEntityUtilsTest {
         };
 
         // Assert
-        assertThrows(IllegalArgumentException.class, executable);
+        assertThrows(UserInvalidException.class, executable);
     }
 }
 

@@ -1,10 +1,17 @@
 package com.pragmatest.models;
 
+import javax.validation.constraints.*;
 
 public class UserRequest {
 
+    @NotBlank(message = "Full Name cannot be empty.")
+    @Size(max=120, message = "Full Name is too long.")
     private String fullName;
+    @NotBlank(message = "Locality cannot be empty.")
+    @Size(max=50, message = "Locality is too long.")
     private String locality;
+    @Min(value = 0, message = "Age cannot be less than 0.")
+    @Max(value = 200, message = "Age cannot be more than 200.")
     private int age;
 
     public UserRequest() {

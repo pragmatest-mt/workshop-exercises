@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class UserController {
 
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
-    UserResponse newUser(@RequestBody UserRequest userRequest) {
+    UserResponse newUser(@Valid @RequestBody UserRequest userRequest) {
 
         User user = modelMapper.map(userRequest, User.class);
 
@@ -61,7 +62,7 @@ public class UserController {
     }
 
     @PutMapping("/users/{id}")
-    UserResponse saveOrUpdate(@RequestBody UserRequest userRequest, @PathVariable Long id) {
+    UserResponse saveOrUpdate(@Valid @RequestBody UserRequest userRequest, @PathVariable Long id) {
 
         User existentUser = userService.getUserById(id).orElseThrow(() -> new UserNotFoundException(id));
 
