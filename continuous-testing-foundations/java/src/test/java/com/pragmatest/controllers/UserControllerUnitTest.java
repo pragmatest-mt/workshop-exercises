@@ -1,12 +1,15 @@
 package com.pragmatest.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Iterables;
 import com.pragmatest.exceptions.UserInvalidException;
 import com.pragmatest.exceptions.UserNotFoundException;
 import com.pragmatest.matchers.UserMatcher;
 import com.pragmatest.models.User;
 import com.pragmatest.models.UserRequest;
+import com.pragmatest.models.UserResponse;
 import com.pragmatest.services.UserService;
+import org.assertj.core.api.Assertions;
+import org.hamcrest.collection.IsIterableContainingInAnyOrder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +21,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @ActiveProfiles("test")
 public class UserControllerUnitTest {
-
-    private static final ObjectMapper om = new ObjectMapper();
 
     @Autowired
     private UserController userController;
@@ -36,15 +38,18 @@ public class UserControllerUnitTest {
     @Test
     public void testGetUserByIdValidId() {
         // Arrange
-        User user = new User("John Smith", "London", 23);
+        User user = new User(1L, "John Smith", "London", 24);
         when(userMockService.getUserById(1L)).thenReturn(Optional.of(user));
+
+        UserResponse expectedResponse = new UserResponse(1L, "John Smith", "London", 24);
 
         Long userId = 1L;
 
         //Act
-        userController.findOne(userId);
+        UserResponse actualResponse = userController.findOne(userId);
 
         // Assert
+        assertThat(actualResponse).isEqualToComparingFieldByField(expectedResponse);
         verify(userMockService, times(1)).getUserById(1L);
     }
 
@@ -52,12 +57,24 @@ public class UserControllerUnitTest {
     public void testGetUsersValidUsers() {
         // Arrange
         List<User> users = Arrays.asList(
-                new User("John Smith", "London", 23),
-                new User("Mary Walsh", "Liverpool", 30));
+                new User(1L, "John Smith", "London", 23),
+                new User(2L, "Mary Walsh", "Liverpool", 30)
+        );
 
         when(userMockService.getAllUsers()).thenReturn(users);
 
-        userController.findAll();
+
+        UserResponse expectedUserResponse1 = new UserResponse(1L, "John Smith", "London", 23);
+        UserResponse expectedUserResponse2 = new UserResponse(2L, "Mary Walsh", "Liverpool", 30);
+
+        // Act
+        List<UserResponse> actualResponse = userController.findAll();
+
+        // Assert
+        //check on this
+        assertTrue(actualResponse.contains(expectedUserResponse1));
+        assertTrue(actualResponse.contains(expectedUserResponse2));
+        assertEquals(2, actualResponse.size());
 
         verify(userMockService, times(1)).getAllUsers();
     }
@@ -75,20 +92,25 @@ public class UserControllerUnitTest {
         verify(userMockService, times(1)).getUserById(1L);
     }
 
-    //
+
     @Test
     public void testSaveUserValidUser() {
         // Arrange
-        User newUser = new User("Marisa Jones", "Newcastle", 20);
-        when(userMockService.saveUser(argThat(new UserMatcher(newUser)))).thenReturn(Optional.of(newUser));
+        User userInput = new User("Marisa Jones", "Newcastle", 20);
+        User userOutput = new User("Marisa Jones", "Newcastle", 20);
+        userOutput.setId(1L);
 
-        UserRequest userRequest = new UserRequest();
-        userRequest.setFullName("Marisa Jones");
-        userRequest.setAge(20);
-        userRequest.setLocality("Newcastle");
-        userController.newUser(userRequest);
+        when(userMockService.saveUser(argThat(new UserMatcher(userInput)))).thenReturn(Optional.of(userOutput));
 
-        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(newUser)));
+        UserRequest userRequest = new UserRequest("Marisa Jones", "Newcastle", 20);
+
+        UserResponse expectedResponse = new UserResponse(1L, "Marisa Jones", "Newcastle", 20);
+
+        UserResponse actualResponse = userController.newUser(userRequest);
+
+        assertThat(actualResponse).isEqualToComparingFieldByField(expectedResponse);
+
+        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(userInput)));
     }
 
     @Test
@@ -97,10 +119,7 @@ public class UserControllerUnitTest {
         User newUser = new User("Jane Stark", "Newcastle", 17);
         when(userMockService.saveUser(argThat(new UserMatcher(newUser)))).thenReturn(Optional.empty());
 
-        UserRequest userRequest = new UserRequest();
-        userRequest.setFullName("Jane Stark");
-        userRequest.setAge(17);
-        userRequest.setLocality("Newcastle");
+        UserRequest userRequest = new UserRequest("Jane Stark", "Newcastle", 17);
 
         Executable executable = () -> {
             userController.newUser(userRequest);
@@ -111,47 +130,36 @@ public class UserControllerUnitTest {
         verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(newUser)));
     }
 
+    @Test
+    public void testDeleteUserValidUser() {
+        // Arrange
+        doNothing().when(userMockService).deleteUserById(1L);
 
-//    @Test
-//    public void testUpdateUserValidUser() throws Exception {
-//        // Arrange
-//        UserEntity updateUserEntity = new UserEntity(1L, "Peter Marshall", "London", 40);
-//        when(userMockService.saveUser(argThat(new UserMatcher(updateUserEntity)))).thenReturn(Optional.of(updateUserEntity));
-//
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.APPLICATION_JSON);
-//
-//        HttpEntity<String> entity = new HttpEntity<>(om.writeValueAsString(updateUserEntity), headers);
-//
-//        String endpoint = "/users/1";
-//
-//        // Act
-//        ResponseEntity<String> response = testRestTemplate.exchange(endpoint, HttpMethod.PUT, entity, String.class);
-//
-//        // Assert
-//        assertEquals(HttpStatus.OK, response.getStatusCode());
-//        JSONAssert.assertEquals(om.writeValueAsString(updateUserEntity), response.getBody(), false);
-//
-//        verify(userMockService, times(1)).getUserById(1L);
-//        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(updateUserEntity)));
-//    }
-//
-//    @Test
-//    public void testDeleteUserValidUser() {
-//        // Arrange
-//        doNothing().when(userMockService).deleteUserById(1L);
-//
-//        HttpEntity<String> entity = new HttpEntity<>(null, new HttpHeaders());
-//
-//        String endpoint = "/users/1";
-//
-//        // Act
-//        ResponseEntity<String> response = testRestTemplate.exchange(endpoint, HttpMethod.DELETE, entity, String.class);
-//
-//        // Assert
-//        assertEquals(HttpStatus.OK, response.getStatusCode());
-//
-//        verify(userMockService, times(1)).deleteUserById(1L);
-//    }
+        userController.deleteUser(1L);
+
+        verify(userMockService, times(1)).deleteUserById(1L);
+    }
+
+
+    @Test
+    public void testUpdateUserValidUser() {
+        // Arrange
+        User user = new User(1L, "John Smith", "Manchester", 20);
+        when(userMockService.getUserById(1L)).thenReturn(Optional.of(user));
+        when(userMockService.saveUser(argThat(new UserMatcher(user)))).thenReturn(Optional.of(user));
+
+        // Act
+        UserRequest userRequest = new UserRequest("John Smith", "Manchester", 20);
+        UserResponse actualResponse = userController.saveOrUpdate(userRequest, 1L);
+
+        UserResponse expectedResponse = new UserResponse(1L, "John Smith", "Manchester", 20);
+
+        // Assert
+        assertThat(actualResponse).isEqualToComparingFieldByField(expectedResponse);
+        verify(userMockService, times(1)).getUserById(1L);
+        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(user)));
+    }
+
+
 
 }
