@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -121,7 +122,7 @@ public class UserControllerUnitTest {
     }
 
     @Test
-    public void testSaveUserInvalidUser() {
+    public void testSaveUserUnderageUser() {
         // Arrange
         User newUser = new User("Jane Stark", "Newcastle", 17);
         when(userMockService.saveUser(argThat(new UserMatcher(newUser)))).thenReturn(Optional.empty());

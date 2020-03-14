@@ -6,6 +6,10 @@ import com.pragmatest.models.User;
 import com.pragmatest.models.UserRequest;
 import com.pragmatest.services.UserService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,8 +22,10 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -135,7 +141,7 @@ public class UserControllerIntegrationTestMockMvc {
     }
 
     @Test
-    public void testSaveUserInvalidUser() throws Exception {
+    public void testSaveUserUnderAgeUser() throws Exception {
         // Arrange
         UserRequest newUserRequest = new UserRequest();
         newUserRequest.setFullName("Michelle Waters");
@@ -159,6 +165,47 @@ public class UserControllerIntegrationTestMockMvc {
         perform.andExpect(status().isBadRequest());
 
         verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(expectedServiceInput)));
+    }
+
+    static Stream<Arguments> invalidUserProvider() {
+        return Stream.of(
+                arguments("Unborn Person", "Not Yet", -100),
+                arguments("Unborn Person", "Not Yet", -1),
+                arguments("George Eliot", "Warwickshire", 201),
+                arguments("Iry-Hor", "Egypt",  5220),
+                arguments("", "Malta",  20),
+                arguments(null, "Malta",  20),
+                arguments(" ", "Malta",  20),
+                arguments(new String(new char[500]).replace('\0', 'a'), "Malta",  20),
+                arguments("John Smith", "", 20),
+                arguments("John Smith", null, 20),
+                arguments("John Smith", new String(new char[500]).replace('\0', 'a'), 20)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidUserProvider")
+    public void testSaveUserInvalidUser(String fullName, String locality, int age) throws Exception {
+        // Arrange
+        UserRequest newUserRequest = new UserRequest();
+        newUserRequest.setFullName(fullName);
+        newUserRequest.setLocality(locality);
+        newUserRequest.setAge(age);
+        String request = om.writeValueAsString(newUserRequest);
+
+        String endpoint = "/users";
+
+        // Act
+        ResultActions perform = mockMvc.perform(
+                post(endpoint)
+                    .contentType(MediaType.APPLICATION_JSON_UTF8)
+                    .content(request)
+                    .accept(MediaType.APPLICATION_JSON_UTF8));
+
+        //Assert
+        perform.andExpect(status().isBadRequest());
+
+        verify(userMockService, never()).saveUser(any());
     }
 
     @Test
