@@ -1,6 +1,5 @@
 package com.pragmatest.controllers;
 
-import com.google.common.collect.Iterables;
 import com.pragmatest.exceptions.UserInvalidException;
 import com.pragmatest.exceptions.UserNotFoundException;
 import com.pragmatest.matchers.UserMatcher;
@@ -8,8 +7,6 @@ import com.pragmatest.models.User;
 import com.pragmatest.models.UserRequest;
 import com.pragmatest.models.UserResponse;
 import com.pragmatest.services.UserService;
-import org.assertj.core.api.Assertions;
-import org.hamcrest.collection.IsIterableContainingInAnyOrder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,10 +80,12 @@ public class UserControllerUnitTest {
     public void testGetUserByIdNonExistentId() {
         when(userMockService.getUserById(1L)).thenReturn(Optional.empty());
 
+        // Act
         Executable executable = () -> {
             userController.findOne(1L);
         };
 
+        // Assert
         assertThrows(UserNotFoundException.class, executable);
 
         verify(userMockService, times(1)).getUserById(1L);
@@ -106,8 +105,10 @@ public class UserControllerUnitTest {
 
         UserResponse expectedResponse = new UserResponse(1L, "Marisa Jones", "Newcastle", 20);
 
+        // Act
         UserResponse actualResponse = userController.newUser(userRequest);
 
+        // Assert
         assertThat(actualResponse).isEqualToComparingFieldByField(expectedResponse);
 
         verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(userInput)));
@@ -121,10 +122,12 @@ public class UserControllerUnitTest {
 
         UserRequest userRequest = new UserRequest("Jane Stark", "Newcastle", 17);
 
+        // Act
         Executable executable = () -> {
             userController.newUser(userRequest);
         };
 
+        // Assert
         assertThrows(UserInvalidException.class, executable);
 
         verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(newUser)));
@@ -135,8 +138,10 @@ public class UserControllerUnitTest {
         // Arrange
         doNothing().when(userMockService).deleteUserById(1L);
 
+        // Act
         userController.deleteUser(1L);
 
+        // Assert
         verify(userMockService, times(1)).deleteUserById(1L);
     }
 
@@ -160,6 +165,45 @@ public class UserControllerUnitTest {
         verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(user)));
     }
 
+    @Test
+    public void testUpdateUserInvalidUser() {
+        // Arrange
+        User user = new User(1L, "John Smith", "Manchester", 17);
+        when(userMockService.getUserById(1L)).thenReturn(Optional.of(user));
+        when(userMockService.saveUser(argThat(new UserMatcher(user)))).thenReturn(Optional.empty());
+
+        // Act
+        UserRequest userRequest = new UserRequest("John Smith", "Manchester", 17);
+
+        Executable executable = () -> {
+          userController.saveOrUpdate(userRequest, 1L);
+        };
+
+        // Assert
+        assertThrows(UserInvalidException.class, executable);
+
+        verify(userMockService, times(1)).getUserById(1L);
+        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(user)));
+    }
+
+    @Test
+    public void testUpdateUserNonexistentUser() {
+        // Arrange
+        User user = new User(1L, "John Smith", "Manchester", 17);
+        when(userMockService.getUserById(1L)).thenReturn(Optional.empty());
+
+        // Act
+        UserRequest userRequest = new UserRequest("John Smith", "Manchester", 17);
+
+        Executable executable = () -> {
+            userController.saveOrUpdate(userRequest, 1L);
+        };
 
 
+        // Assert
+        assertThrows(UserNotFoundException.class, executable);
+
+        verify(userMockService, times(1)).getUserById(1L);
+        verify(userMockService, never()).saveUser(any(User.class));
+    }
 }

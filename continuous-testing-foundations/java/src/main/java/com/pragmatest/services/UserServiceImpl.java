@@ -62,8 +62,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = modelMapper.map(user, UserEntity.class);
 
         if (isAdult) {
-            UserEntity helllo = userRepository.save(userEntity);
-            savedUserEntity = Optional.of(helllo);
+            savedUserEntity = Optional.of(userRepository.save(userEntity));
         }
 
         if (savedUserEntity.isEmpty()) {

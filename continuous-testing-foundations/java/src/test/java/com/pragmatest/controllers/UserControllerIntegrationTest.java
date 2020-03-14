@@ -39,7 +39,7 @@ public class UserControllerIntegrationTest {
     @Test
     public void testGetUserByIdValidId() throws JSONException {
         // Arrange
-        User user = new User("John Smith", "London", 23);
+        User user = new User(1L, "John Smith", "London", 23);
         when(userMockService.getUserById(1L)).thenReturn(Optional.of(user));
 
         String expectedResponseBody = "{id:1, fullName:\"John Smith\", locality:\"London\", age:23}";
@@ -59,7 +59,6 @@ public class UserControllerIntegrationTest {
 
     @Test
     public void testGetUsersByIdValidIds() throws JsonProcessingException, JSONException {
-        // Arrange
         // Arrange
         List<User> users = Arrays.asList(
                 new User("John Smith", "London", 23),
@@ -121,7 +120,7 @@ public class UserControllerIntegrationTest {
     public void testSaveUserInvalidUser() throws JSONException {
         // Arrange
         User newUser = new User("Marisa Jones", "Newcastle", 17);
-        when(userMockService.saveUser(argThat(new UserMatcher(newUser)))).thenReturn(Optional.of(newUser));
+        when(userMockService.saveUser(argThat(new UserMatcher(newUser)))).thenReturn(Optional.empty());
 
         String expectedResponseBody = "{status:400,error:\"Bad Request\",message:\"Invalid User\"}";
 
@@ -141,13 +140,17 @@ public class UserControllerIntegrationTest {
     @Test
     public void testUpdateUserValidUser() throws Exception {
         // Arrange
-        User updateUser = new User( "Peter Marshall", "London", 40);
-        when(userMockService.saveUser(argThat(new UserMatcher(updateUser)))).thenReturn(Optional.of(updateUser));
+        User updateService = new User( 1L, "Peter Marshall", "London", 40);
+        when(userMockService.saveUser(argThat(new UserMatcher(updateService)))).thenReturn(Optional.of(updateService));
+
+        User getServiceOutput = new User( 1L, "John Marshall", "London", 40);
+        when(userMockService.getUserById(1L)).thenReturn(Optional.of(getServiceOutput));
+
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<String> entity = new HttpEntity<>(om.writeValueAsString(updateUser), headers);
+        HttpEntity<String> entity = new HttpEntity<>(om.writeValueAsString(updateService), headers);
 
         String endpoint = "/users/1";
 
@@ -156,11 +159,13 @@ public class UserControllerIntegrationTest {
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        JSONAssert.assertEquals(om.writeValueAsString(updateUser), response.getBody(), false);
+        JSONAssert.assertEquals(om.writeValueAsString(updateService), response.getBody(), false);
 
         verify(userMockService, times(1)).getUserById(1L);
-        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(updateUser)));
+        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(updateService)));
     }
+
+    // ADD MORE TEST FOR UPDATE, INVALID AND DOES NOT EXIST
 
     @Test
     public void testDeleteUserValidUser() {
