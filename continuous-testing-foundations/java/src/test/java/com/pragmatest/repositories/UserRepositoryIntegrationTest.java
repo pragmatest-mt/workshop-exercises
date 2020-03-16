@@ -1,13 +1,11 @@
 package com.pragmatest.repositories;
 
 import com.pragmatest.models.UserEntity;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -41,11 +39,13 @@ public class UserRepositoryIntegrationTest {
         userEntity2.setLocality("Manchester");
         userEntity2.setAge(24);
     }
+
     @BeforeEach
     void beforeTest() {
         // Arrange
         testEntityManager.persist(userEntity1);
         testEntityManager.persist(userEntity2);
+
         testEntityManager.flush();
     }
 
@@ -82,12 +82,14 @@ public class UserRepositoryIntegrationTest {
 
     @Test
     void testDeleteUser() {
+        // Arrange
         Long id = userEntity1.getId();
 
+        // Act
         userRepository.delete(userEntity1);
-
         UserEntity retrievedUserEntity = testEntityManager.find(UserEntity.class, id);
 
+        // Assert
         assertNull(retrievedUserEntity);
     }
 }

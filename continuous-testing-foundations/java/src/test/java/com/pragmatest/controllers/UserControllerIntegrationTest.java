@@ -2,10 +2,8 @@ package com.pragmatest.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pragmatest.matchers.UserEntityMatcher;
 import com.pragmatest.matchers.UserMatcher;
 import com.pragmatest.models.User;
-import com.pragmatest.models.UserEntity;
 import com.pragmatest.services.UserService;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -82,7 +80,7 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    public void testGetUserByIdInvalidId() throws Exception {
+    public void testGetUserByIdNonExistentId() throws Exception {
         // Arrange
         String expectedResponseBody = "{status:404,error:\"Not Found\",message:\"User with ID '5' not found.\",path:\"/users/5\"}";
 
@@ -117,7 +115,7 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    public void testSaveUserInvalidUser() throws JSONException {
+    public void testSaveUserUnderAgeUser() throws JSONException {
         // Arrange
         User newUser = new User("Marisa Jones", "Newcastle", 17);
         when(userMockService.saveUser(argThat(new UserMatcher(newUser)))).thenReturn(Optional.empty());
@@ -135,7 +133,6 @@ public class UserControllerIntegrationTest {
 
         verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(newUser)));
     }
-
 
     @Test
     public void testUpdateUserValidUser() throws Exception {
@@ -165,7 +162,62 @@ public class UserControllerIntegrationTest {
         verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(updateService)));
     }
 
-    // ADD MORE TEST FOR UPDATE, INVALID AND DOES NOT EXIST
+    @Test
+    public void testUpdateUserUnderageUser() throws Exception {
+        // Arrange
+        User saveUserInput = new User( 1L, "Peter Marshall", "London", 17);
+        when(userMockService.saveUser(argThat(new UserMatcher(saveUserInput)))).thenReturn(Optional.empty());
+
+        User getUserByIdOutput = new User( 1L, "John Marshall", "London", 40);
+        when(userMockService.getUserById(1L)).thenReturn(Optional.of(getUserByIdOutput));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<String> entity = new HttpEntity<>(om.writeValueAsString(saveUserInput), headers);
+
+        String endpoint = "/users/1";
+
+        String expectedResponseBody = "{status:400,error:\"Bad Request\",message:\"Invalid User\"}";
+
+        // Act
+        ResponseEntity<String> response = testRestTemplate.exchange(endpoint, HttpMethod.PUT, entity, String.class);
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        JSONAssert.assertEquals(expectedResponseBody, response.getBody(), false);
+
+        verify(userMockService, times(1)).getUserById(1L);
+        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(saveUserInput)));
+    }
+
+    @Test
+    public void testUpdateUserNonExistentId() throws Exception {
+        // Arrange
+        User saveUserInput = new User( 1L, "Peter Marshall", "London", 17);
+        when(userMockService.saveUser(argThat(new UserMatcher(saveUserInput)))).thenReturn(Optional.empty());
+
+        when(userMockService.getUserById(1L)).thenReturn(Optional.empty());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<String> entity = new HttpEntity<>(om.writeValueAsString(saveUserInput), headers);
+
+        String endpoint = "/users/1";
+
+        String expectedResponseBody = "{status:404,error:\"Not Found\",message:\"User with ID '1' not found.\",path:\"/users/1\"}";
+
+        // Act
+        ResponseEntity<String> response = testRestTemplate.exchange(endpoint, HttpMethod.PUT, entity, String.class);
+
+        // Assert
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        JSONAssert.assertEquals(expectedResponseBody, response.getBody(), false);
+
+        verify(userMockService, times(1)).getUserById(1L);
+        verify(userMockService, never()).saveUser(argThat(new UserMatcher(saveUserInput)));
+    }
 
     @Test
     public void testDeleteUserValidUser() {

@@ -88,16 +88,25 @@ public class UserEntityServiceTest {
 
     @Test
     void testGetUserByIdInvalidId() {
-        //Arrange
+        // Arrange
         when(userMockRepository.findById(1L)).thenReturn(Optional.empty());
 
         // Act
         Optional<User> returnedUser = userService.getUserById(1L);
 
-        //Assert
+        // Assert
         assertTrue(returnedUser.isEmpty());
 
         verify(userMockRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void testDeleteUserByIdValidId() {
+        // Act
+        userService.deleteUserById(1L);
+
+        // Assert
+        verify(userMockRepository, times(1)).deleteById(1L);
     }
 
     @Test
@@ -126,4 +135,6 @@ public class UserEntityServiceTest {
 
         verify(userMockRepository, times(1)).findAll();
     }
+
+
 }

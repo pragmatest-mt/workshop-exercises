@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -53,6 +52,21 @@ public class UserControllerUnitTest {
     }
 
     @Test
+    public void testGetUserByIdNonExistentId() {
+        // Arrange
+        when(userMockService.getUserById(1L)).thenReturn(Optional.empty());
+
+        // Act
+        Executable executable = () -> {
+            userController.findOne(1L);
+        };
+
+        // Assert
+        assertThrows(UserNotFoundException.class, executable);
+        verify(userMockService, times(1)).getUserById(1L);
+    }
+
+    @Test
     public void testGetUsersValidUsers() {
         // Arrange
         List<User> users = Arrays.asList(
@@ -84,22 +98,6 @@ public class UserControllerUnitTest {
     }
 
     @Test
-    public void testGetUserByIdNonExistentId() {
-        when(userMockService.getUserById(1L)).thenReturn(Optional.empty());
-
-        // Act
-        Executable executable = () -> {
-            userController.findOne(1L);
-        };
-
-        // Assert
-        assertThrows(UserNotFoundException.class, executable);
-
-        verify(userMockService, times(1)).getUserById(1L);
-    }
-
-
-    @Test
     public void testSaveUserValidUser() {
         // Arrange
         User userInput = new User("Marisa Jones", "Newcastle", 20);
@@ -117,12 +115,11 @@ public class UserControllerUnitTest {
 
         // Assert
         assertThat(actualResponse).isEqualToComparingFieldByField(expectedResponse);
-
         verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(userInput)));
     }
 
     @Test
-    public void testSaveUserUnderageUser() {
+    public void testSaveUserUnderAgeUser() {
         // Arrange
         User newUser = new User("Jane Stark", "Newcastle", 17);
         when(userMockService.saveUser(argThat(new UserMatcher(newUser)))).thenReturn(Optional.empty());
@@ -152,7 +149,6 @@ public class UserControllerUnitTest {
         verify(userMockService, times(1)).deleteUserById(1L);
     }
 
-
     @Test
     public void testUpdateUserValidUser() {
         // Arrange
@@ -173,7 +169,7 @@ public class UserControllerUnitTest {
     }
 
     @Test
-    public void testUpdateUserInvalidUser() {
+    public void testUpdateUserUnderAgeUser() {
         // Arrange
         User user = new User(1L, "John Smith", "Manchester", 17);
         when(userMockService.getUserById(1L)).thenReturn(Optional.of(user));
@@ -188,7 +184,6 @@ public class UserControllerUnitTest {
 
         // Assert
         assertThrows(UserInvalidException.class, executable);
-
         verify(userMockService, times(1)).getUserById(1L);
         verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(user)));
     }
@@ -206,10 +201,8 @@ public class UserControllerUnitTest {
             userController.saveOrUpdate(userRequest, 1L);
         };
 
-
         // Assert
         assertThrows(UserNotFoundException.class, executable);
-
         verify(userMockService, times(1)).getUserById(1L);
         verify(userMockService, never()).saveUser(any(User.class));
     }
