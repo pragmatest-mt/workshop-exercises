@@ -1,5 +1,6 @@
 package com.pragmatest.repositories;
 
+import com.pragmatest.models.User;
 import com.pragmatest.models.UserEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,7 @@ public class UserRepositoryIntegrationTest {
     UserEntity userEntity2;
 
     public UserRepositoryIntegrationTest() {
+        // Arrange
         userEntity1 = new UserEntity();
         userEntity1.setFullName("John Smith");
         userEntity1.setLocality("London");
@@ -47,6 +49,23 @@ public class UserRepositoryIntegrationTest {
         testEntityManager.persist(userEntity2);
 
         testEntityManager.flush();
+    }
+
+    @Test
+    void testSaveUser() {
+        // Arrange
+        UserEntity userEntity3 = new UserEntity();
+        userEntity3.setFullName("John Smith");
+        userEntity3.setLocality("London");
+        userEntity3.setAge(20);
+
+        // Act
+        UserEntity savedUser = userRepository.save(userEntity3);
+
+        // Assert
+        UserEntity retrievedUser = testEntityManager.find(UserEntity.class, savedUser.getId());
+
+        assertEquals(userEntity3, retrievedUser);
     }
 
     @Test

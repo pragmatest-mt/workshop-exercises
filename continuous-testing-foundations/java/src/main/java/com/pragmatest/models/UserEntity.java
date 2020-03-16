@@ -16,6 +16,11 @@ public class UserEntity {
     private int age;
 
     public UserEntity() {
+        this(null, null, null, 0);
+    }
+
+    public UserEntity(String fullName, String locality, int age) {
+        this(null, fullName, locality, age);
     }
 
     public UserEntity(Long id, String fullName, String locality, int age) {
@@ -24,13 +29,6 @@ public class UserEntity {
         this.locality = locality;
         this.age = age;
     }
-
-    public UserEntity(String fullName, String locality, int age) {
-        this.fullName = fullName;
-        this.locality = locality;
-        this.age = age;
-    }
-
 
     public Long getId() {
         return id;

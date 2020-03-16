@@ -57,70 +57,6 @@ public class UserControllerIntegrationTestMockMvc {
     }
 
     @Test
-    public void testGetUserByIdValidId() throws Exception {
-        // Arrange
-        User user = new User("John Smith", "London", 23);
-
-        when(userMockService.getUserById(1L)).thenReturn(Optional.of(user));
-
-        String endpoint = "/users/1";
-
-        // Act
-        ResultActions perform = mockMvc.perform(get(endpoint));
-
-        // Assert
-        perform.andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.fullName").value("John Smith"))
-                .andExpect(jsonPath("$.locality").value("London"))
-                .andExpect(jsonPath("$.age").value(23));
-
-        verify(userMockService, times(1)).getUserById(1L);
-    }
-
-    @Test
-    public void testGetUsersByIdValidIds() throws Exception {
-        // Arrange
-        List<User> users = Arrays.asList(
-                new User("John Smith", "London", 23),
-                new User("Mary Walsh", "Liverpool", 30));
-
-        when(userMockService.getAllUsers()).thenReturn(users);
-
-        String endpoint = "/users";
-
-        // Act
-        ResultActions perform = mockMvc.perform(get(endpoint));
-
-        // Assert
-        perform.andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].fullName").value("John Smith"))
-                .andExpect(jsonPath("$[0].locality").value("London"))
-                .andExpect(jsonPath("$[0].age").value(23))
-                .andExpect(jsonPath("$[1].fullName").value("Mary Walsh"))
-                .andExpect(jsonPath("$[1].locality").value("Liverpool"))
-                .andExpect(jsonPath("$[1].age").value(30));
-
-        verify(userMockService, times(1)).getAllUsers();
-    }
-
-    @Test
-    public void testGetUserByIdNonExistentId() throws Exception {
-        // Arrange
-        String endpoint = "/users/5";
-
-        // Act
-        ResultActions perform = mockMvc.perform(get(endpoint));
-
-        // Assert
-        perform.andExpect(status().isNotFound());
-
-        verify(userMockService, times(1)).getUserById(5L);
-    }
-
-    @Test
     public void testSaveUserValidUser() throws Exception {
         // Arrange
         UserRequest newUserRequest = new UserRequest();
@@ -129,9 +65,7 @@ public class UserControllerIntegrationTestMockMvc {
         newUserRequest.setAge(20);
 
         User expectedServiceInput = new User("Marisa Jones", "Newcastle", 20);
-
-        User mockedServiceOutput = new User("Marisa Jones", "Newcastle", 20);
-        mockedServiceOutput.setId(1L);
+        User mockedServiceOutput = new User(1L, "Marisa Jones", "Newcastle", 20);
 
         when(userMockService.saveUser(argThat(new UserMatcher(expectedServiceInput)))).thenReturn(Optional.of(mockedServiceOutput));
 
@@ -140,14 +74,14 @@ public class UserControllerIntegrationTestMockMvc {
         String endpoint = "/users";
 
         // Act
-        ResultActions perform = mockMvc.perform(
+        ResultActions resultActions = mockMvc.perform(
                 post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(request)
                         .accept(MediaType.APPLICATION_JSON_UTF8));
 
         // Assert
-        perform.andExpect(status().isCreated())
+        resultActions.andExpect(status().isCreated())
                 .andExpect(jsonPath("$.fullName").value("Marisa Jones"))
                 .andExpect(jsonPath("$.locality").value("Newcastle"))
                 .andExpect(jsonPath("$.age").value(20))
@@ -171,16 +105,80 @@ public class UserControllerIntegrationTestMockMvc {
         String endpoint = "/users";
 
         // Act
-        ResultActions perform = mockMvc.perform(
+        ResultActions resultActions = mockMvc.perform(
                 post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(request)
                         .accept(MediaType.APPLICATION_JSON_UTF8));
 
         //Assert
-        perform.andExpect(status().isBadRequest());
+        resultActions.andExpect(status().isBadRequest());
 
         verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(expectedServiceInput)));
+    }
+
+    @Test
+    public void testGetUserByIdValidId() throws Exception {
+        // Arrange
+        User user = new User("John Smith", "London", 23);
+
+        when(userMockService.getUserById(1L)).thenReturn(Optional.of(user));
+
+        String endpoint = "/users/1";
+
+        // Act
+        ResultActions resultActions = mockMvc.perform(get(endpoint));
+
+        // Assert
+        resultActions.andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$.fullName").value("John Smith"))
+                .andExpect(jsonPath("$.locality").value("London"))
+                .andExpect(jsonPath("$.age").value(23));
+
+        verify(userMockService, times(1)).getUserById(1L);
+    }
+
+    @Test
+    public void testGetUsersByIdValidIds() throws Exception {
+        // Arrange
+        List<User> users = Arrays.asList(
+                new User("John Smith", "London", 23),
+                new User("Mary Walsh", "Liverpool", 30));
+
+        when(userMockService.getAllUsers()).thenReturn(users);
+
+        String endpoint = "/users";
+
+        // Act
+        ResultActions resultActions = mockMvc.perform(get(endpoint));
+
+        // Assert
+        resultActions.andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].fullName").value("John Smith"))
+                .andExpect(jsonPath("$[0].locality").value("London"))
+                .andExpect(jsonPath("$[0].age").value(23))
+                .andExpect(jsonPath("$[1].fullName").value("Mary Walsh"))
+                .andExpect(jsonPath("$[1].locality").value("Liverpool"))
+                .andExpect(jsonPath("$[1].age").value(30));
+
+        verify(userMockService, times(1)).getAllUsers();
+    }
+
+    @Test
+    public void testGetUserByIdNonExistentId() throws Exception {
+        // Arrange
+        String endpoint = "/users/5";
+
+        // Act
+        ResultActions resultActions = mockMvc.perform(get(endpoint));
+
+        // Assert
+        resultActions.andExpect(status().isNotFound());
+
+        verify(userMockService, times(1)).getUserById(5L);
     }
 
     @ParameterizedTest
@@ -196,14 +194,14 @@ public class UserControllerIntegrationTestMockMvc {
         String endpoint = "/users";
 
         // Act
-        ResultActions perform = mockMvc.perform(
+        ResultActions resultActions = mockMvc.perform(
                 post(endpoint)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(request)
                         .accept(MediaType.APPLICATION_JSON_UTF8));
 
         //Assert
-        perform.andExpect(status().isBadRequest());
+        resultActions.andExpect(status().isBadRequest());
 
         verify(userMockService, never()).saveUser(any());
     }
@@ -228,14 +226,14 @@ public class UserControllerIntegrationTestMockMvc {
         String endpoint = "/users/" + updateUserId;
 
         // Act
-        ResultActions perform = mockMvc.perform(
+        ResultActions resultActions = mockMvc.perform(
                 put(endpoint)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(request)
                         .accept(MediaType.APPLICATION_JSON_UTF8));
 
         // Assert
-        perform.andExpect(status().isOk())
+        resultActions.andExpect(status().isOk())
                 .andExpect(jsonPath("$.fullName").value("Marisa Jones"))
                 .andExpect(jsonPath("$.locality").value("Newcastle"))
                 .andExpect(jsonPath("$.age").value(20))
@@ -266,14 +264,14 @@ public class UserControllerIntegrationTestMockMvc {
         String endpoint = "/users/" + updateUserId;
 
         // Act
-        ResultActions perform = mockMvc.perform(
+        ResultActions resultActions = mockMvc.perform(
                 put(endpoint)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(request)
                         .accept(MediaType.APPLICATION_JSON_UTF8));
 
         // Assert
-        perform.andExpect(status().isBadRequest());
+        resultActions.andExpect(status().isBadRequest());
 
         verify(userMockService, times(1)).getUserById(updateUserId);
         verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(saveUserInput)));
@@ -299,14 +297,14 @@ public class UserControllerIntegrationTestMockMvc {
         String endpoint = "/users/" + updateUserId;
 
         // Act
-        ResultActions perform = mockMvc.perform(
+        ResultActions resultActions = mockMvc.perform(
                 put(endpoint)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(request)
                         .accept(MediaType.APPLICATION_JSON_UTF8));
 
         // Assert
-        perform.andExpect(status().isNotFound());
+        resultActions.andExpect(status().isNotFound());
 
         verify(userMockService, times(1)).getUserById(updateUserId);
         verify(userMockService, never()).saveUser(argThat(new UserMatcher(saveUserInput)));
@@ -328,14 +326,14 @@ public class UserControllerIntegrationTestMockMvc {
         String endpoint = "/users/" + updateUserId;
 
         // Act
-        ResultActions perform = mockMvc.perform(
+        ResultActions resultActions = mockMvc.perform(
                 put(endpoint)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(request)
                         .accept(MediaType.APPLICATION_JSON_UTF8));
 
         // Assert
-        perform.andExpect(status().isBadRequest());
+        resultActions.andExpect(status().isBadRequest());
 
         verify(userMockService, never()).saveUser(any());
     }
@@ -349,10 +347,10 @@ public class UserControllerIntegrationTestMockMvc {
         String endpoint = "/users/" + deleteUserId;
 
         // Act
-        ResultActions perform = mockMvc.perform(delete(endpoint));
+        ResultActions resultActions = mockMvc.perform(delete(endpoint));
 
         // Assert
-        perform.andExpect(status().isOk());
+        resultActions.andExpect(status().isOk());
 
         verify(userMockService, times(1)).deleteUserById(1L);
     }

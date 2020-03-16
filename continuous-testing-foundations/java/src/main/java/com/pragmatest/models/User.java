@@ -8,16 +8,15 @@ public class User {
     private int age;
 
     public User() {
+        this(null, null, null, 0);
+    }
+
+    public User(String fullName, String locality, int age) {
+        this(null, fullName, locality, age);
     }
 
     public User(Long id, String fullName, String locality, int age) {
         this.setId(id);
-        this.fullName = fullName;
-        this.locality = locality;
-        this.age = age;
-    }
-
-    public User(String fullName, String locality, int age) {
         this.fullName = fullName;
         this.locality = locality;
         this.age = age;

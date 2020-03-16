@@ -5,8 +5,7 @@ public class UserResponse extends UserRequest {
     private Long Id;
 
     public UserResponse() {
-
-        super();
+        this(null, null, null, 0);
     }
 
     public UserResponse(Long id, String fullName, String locality, int age) {

@@ -35,6 +35,44 @@ public class UserControllerIntegrationTest {
     private UserService userMockService;
 
     @Test
+    public void testSaveUserValidUser() throws Exception {
+        // Arrange
+        User serviceInput = new User("Marisa Jones", "Newcastle", 20);
+        User serviceOutput = new User(1L,"Marisa Jones", "Newcastle", 20);
+        when(userMockService.saveUser(argThat(new UserMatcher(serviceInput)))).thenReturn(Optional.of(serviceOutput));
+
+        String expectedResponseBody = om.writeValueAsString(serviceOutput);
+
+        String endpoint = "/users";
+
+        // Act
+        ResponseEntity<String> response = testRestTemplate.postForEntity(endpoint, serviceInput, String.class);
+
+        // Assert
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        JSONAssert.assertEquals(expectedResponseBody, response.getBody(), true);
+
+        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(serviceInput)));
+    }
+
+    @Test
+    public void testSaveUserUnderAgeUser() throws JSONException {
+        // Arrange
+        User newUser = new User("Marisa Jones", "Newcastle", 17);
+        when(userMockService.saveUser(argThat(new UserMatcher(newUser)))).thenReturn(Optional.empty());
+
+        String endpoint = "/users";
+
+        // Act
+        ResponseEntity<String> response = testRestTemplate.postForEntity(endpoint, newUser, String.class);
+
+        //Assert
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(newUser)));
+    }
+
+    @Test
     public void testGetUserByIdValidId() throws JSONException {
         // Arrange
         User user = new User(1L, "John Smith", "London", 23);
@@ -50,7 +88,7 @@ public class UserControllerIntegrationTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(MediaType.APPLICATION_JSON_UTF8, responseEntity.getHeaders().getContentType());
 
-        JSONAssert.assertEquals(expectedResponseBody, responseEntity.getBody(), false);
+        JSONAssert.assertEquals(expectedResponseBody, responseEntity.getBody(), true);
 
         verify(userMockService, times(1)).getUserById(1L);
     }
@@ -74,16 +112,14 @@ public class UserControllerIntegrationTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(MediaType.APPLICATION_JSON_UTF8, responseEntity.getHeaders().getContentType());
 
-        JSONAssert.assertEquals(expectedUserList, responseEntity.getBody(), false);
+        JSONAssert.assertEquals(expectedUserList, responseEntity.getBody(), true);
 
         verify(userMockService, times(1)).getAllUsers();
     }
 
     @Test
-    public void testGetUserByIdNonExistentId() throws Exception {
+    public void testGetUserByIdNonExistentId() {
         // Arrange
-        String expectedResponseBody = "{status:404,error:\"Not Found\",message:\"User with ID '5' not found.\",path:\"/users/5\"}";
-
         String endpoint = "/users/5";
 
         // Act
@@ -91,47 +127,6 @@ public class UserControllerIntegrationTest {
 
         // Assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        JSONAssert.assertEquals(expectedResponseBody, response.getBody(), false);
-    }
-
-    @Test
-    public void testSaveUserValidUser() throws Exception {
-        // Arrange
-        User newUser = new User("Marisa Jones", "Newcastle", 20);
-        when(userMockService.saveUser(argThat(new UserMatcher(newUser)))).thenReturn(Optional.of(newUser));
-
-        String expectedResponseBody = om.writeValueAsString(newUser);
-
-        String endpoint = "/users";
-
-        // Act
-        ResponseEntity<String> response = testRestTemplate.postForEntity(endpoint, newUser, String.class);
-
-        // Assert
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        JSONAssert.assertEquals(expectedResponseBody, response.getBody(), false);
-
-        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(newUser)));
-    }
-
-    @Test
-    public void testSaveUserUnderAgeUser() throws JSONException {
-        // Arrange
-        User newUser = new User("Marisa Jones", "Newcastle", 17);
-        when(userMockService.saveUser(argThat(new UserMatcher(newUser)))).thenReturn(Optional.empty());
-
-        String expectedResponseBody = "{status:400,error:\"Bad Request\",message:\"Invalid User\"}";
-
-        String endpoint = "/users";
-
-        // Act
-        ResponseEntity<String> response = testRestTemplate.postForEntity(endpoint, newUser, String.class);
-
-        //Assert
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        JSONAssert.assertEquals(expectedResponseBody, response.getBody(), false);
-
-        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(newUser)));
     }
 
     @Test
@@ -156,7 +151,7 @@ public class UserControllerIntegrationTest {
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        JSONAssert.assertEquals(om.writeValueAsString(updateService), response.getBody(), false);
+        JSONAssert.assertEquals(om.writeValueAsString(updateService), response.getBody(), true);
 
         verify(userMockService, times(1)).getUserById(1L);
         verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(updateService)));
@@ -178,14 +173,11 @@ public class UserControllerIntegrationTest {
 
         String endpoint = "/users/1";
 
-        String expectedResponseBody = "{status:400,error:\"Bad Request\",message:\"Invalid User\"}";
-
         // Act
         ResponseEntity<String> response = testRestTemplate.exchange(endpoint, HttpMethod.PUT, entity, String.class);
 
         // Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        JSONAssert.assertEquals(expectedResponseBody, response.getBody(), false);
 
         verify(userMockService, times(1)).getUserById(1L);
         verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(saveUserInput)));
@@ -206,14 +198,11 @@ public class UserControllerIntegrationTest {
 
         String endpoint = "/users/1";
 
-        String expectedResponseBody = "{status:404,error:\"Not Found\",message:\"User with ID '1' not found.\",path:\"/users/1\"}";
-
         // Act
         ResponseEntity<String> response = testRestTemplate.exchange(endpoint, HttpMethod.PUT, entity, String.class);
 
         // Assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        JSONAssert.assertEquals(expectedResponseBody, response.getBody(), false);
 
         verify(userMockService, times(1)).getUserById(1L);
         verify(userMockService, never()).saveUser(argThat(new UserMatcher(saveUserInput)));

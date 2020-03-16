@@ -34,6 +34,46 @@ public class UserControllerUnitTest {
     private UserService userMockService;
 
     @Test
+    public void testSaveUserValidUser() {
+        // Arrange
+        User userInput = new User("Marisa Jones", "Newcastle", 20);
+        User userOutput = new User("Marisa Jones", "Newcastle", 20);
+        userOutput.setId(1L);
+
+        when(userMockService.saveUser(argThat(new UserMatcher(userInput)))).thenReturn(Optional.of(userOutput));
+
+        UserRequest userRequest = new UserRequest("Marisa Jones", "Newcastle", 20);
+
+        UserResponse expectedResponse = new UserResponse(1L, "Marisa Jones", "Newcastle", 20);
+
+        // Act
+        UserResponse actualResponse = userController.newUser(userRequest);
+
+        // Assert
+        assertThat(actualResponse).isEqualToComparingFieldByField(expectedResponse);
+        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(userInput)));
+    }
+
+    @Test
+    public void testSaveUserUnderAgeUser() {
+        // Arrange
+        User newUser = new User("Jane Stark", "Newcastle", 17);
+        when(userMockService.saveUser(argThat(new UserMatcher(newUser)))).thenReturn(Optional.empty());
+
+        UserRequest userRequest = new UserRequest("Jane Stark", "Newcastle", 17);
+
+        // Act
+        Executable executable = () -> {
+            userController.newUser(userRequest);
+        };
+
+        // Assert
+        assertThrows(UserInvalidException.class, executable);
+
+        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(newUser)));
+    }
+
+    @Test
     public void testGetUserByIdValidId() {
         // Arrange
         User user = new User(1L, "John Smith", "London", 24);
@@ -95,46 +135,6 @@ public class UserControllerUnitTest {
                 );
 
         verify(userMockService, times(1)).getAllUsers();
-    }
-
-    @Test
-    public void testSaveUserValidUser() {
-        // Arrange
-        User userInput = new User("Marisa Jones", "Newcastle", 20);
-        User userOutput = new User("Marisa Jones", "Newcastle", 20);
-        userOutput.setId(1L);
-
-        when(userMockService.saveUser(argThat(new UserMatcher(userInput)))).thenReturn(Optional.of(userOutput));
-
-        UserRequest userRequest = new UserRequest("Marisa Jones", "Newcastle", 20);
-
-        UserResponse expectedResponse = new UserResponse(1L, "Marisa Jones", "Newcastle", 20);
-
-        // Act
-        UserResponse actualResponse = userController.newUser(userRequest);
-
-        // Assert
-        assertThat(actualResponse).isEqualToComparingFieldByField(expectedResponse);
-        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(userInput)));
-    }
-
-    @Test
-    public void testSaveUserUnderAgeUser() {
-        // Arrange
-        User newUser = new User("Jane Stark", "Newcastle", 17);
-        when(userMockService.saveUser(argThat(new UserMatcher(newUser)))).thenReturn(Optional.empty());
-
-        UserRequest userRequest = new UserRequest("Jane Stark", "Newcastle", 17);
-
-        // Act
-        Executable executable = () -> {
-            userController.newUser(userRequest);
-        };
-
-        // Assert
-        assertThrows(UserInvalidException.class, executable);
-
-        verify(userMockService, times(1)).saveUser(argThat(new UserMatcher(newUser)));
     }
 
     @Test

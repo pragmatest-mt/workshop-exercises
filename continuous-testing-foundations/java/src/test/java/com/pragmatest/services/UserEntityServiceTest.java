@@ -53,7 +53,7 @@ public class UserEntityServiceTest {
     }
 
     @Test
-    void testSaveUserInvalidUser() {
+    void testSaveUserUnderAgeUser() {
         // Arrange
         UserEntity newUserEntity = new UserEntity("John Smith", "London", 17);
         when(userMockRepository.save(newUserEntity)).thenReturn(newUserEntity);

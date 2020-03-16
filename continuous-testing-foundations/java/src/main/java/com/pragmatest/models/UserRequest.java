@@ -17,7 +17,7 @@ public class UserRequest {
     private int age;
 
     public UserRequest() {
-
+        this(null, null, 0);
     }
 
     public UserRequest(String fullName, String locality, int age) {
