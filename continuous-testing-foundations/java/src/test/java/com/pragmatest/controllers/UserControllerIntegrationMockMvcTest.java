@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class UserControllerIntegrationTestMockMvc {
+public class UserControllerIntegrationMockMvcTest {
 
     private static final ObjectMapper om = new ObjectMapper();
 
