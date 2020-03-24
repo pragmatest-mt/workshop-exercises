@@ -56,7 +56,7 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    public void testSaveUserUnderAgeUser() throws JSONException {
+    public void testSaveUserUnderAgeUser() {
         // Arrange
         User newUser = new User("Marisa Jones", "Newcastle", 17);
         when(userMockService.saveUser(argThat(new UserMatcher(newUser)))).thenReturn(Optional.empty());
