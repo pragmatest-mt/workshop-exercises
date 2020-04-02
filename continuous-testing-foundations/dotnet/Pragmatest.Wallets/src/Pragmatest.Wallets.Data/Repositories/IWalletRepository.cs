@@ -7,7 +7,6 @@ namespace Pragmatest.Wallets.Data.Repositories
     public interface IWalletRepository
     {
         Task<WalletEntry> GetLastWalletEntryAsync();
-        Task<List<WalletEntry>> GetWalletEntriesAsync();
         Task InsertWalletEntryAsync(WalletEntry walletEntry);
     }
 }
