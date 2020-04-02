@@ -24,7 +24,7 @@ namespace Pragmatest.Wallets.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Balance()
+        public async Task<ActionResult<BalanceResponse>> Balance()
         {
             Balance balance = await _walletService.GetBalanceAsync();
 

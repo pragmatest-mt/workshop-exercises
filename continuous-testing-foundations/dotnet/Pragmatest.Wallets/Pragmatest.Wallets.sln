@@ -9,11 +9,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5C567360-00B
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2A4C5C33-0D2B-4FAF-B193-1C438BA8F326}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmatest.Wallets.Web.UnitTests", "test\Pragmatest.Wallets.Web.UnitTests\Pragmatest.Wallets.Web.UnitTests.csproj", "{FE8C5D7A-ABE8-45F8-BA26-8A6F87525F62}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pragmatest.Wallets.Web.UnitTests", "test\Pragmatest.Wallets.Web.UnitTests\Pragmatest.Wallets.Web.UnitTests.csproj", "{FE8C5D7A-ABE8-45F8-BA26-8A6F87525F62}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmatest.Wallets.Data", "src\Pragmatest.Wallets.Data\Pragmatest.Wallets.Data.csproj", "{1ADEBE24-E294-4027-A46C-87CC2E7266E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pragmatest.Wallets.Data", "src\Pragmatest.Wallets.Data\Pragmatest.Wallets.Data.csproj", "{1ADEBE24-E294-4027-A46C-87CC2E7266E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmatest.Wallets", "src\Pragmatest.Wallets\Pragmatest.Wallets.csproj", "{98FAA612-5563-4BCB-9DE4-D07FA3DFA6D4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pragmatest.Wallets", "src\Pragmatest.Wallets\Pragmatest.Wallets.csproj", "{98FAA612-5563-4BCB-9DE4-D07FA3DFA6D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmatest.Wallets.TestUtilities", "test\Pragmatest.Wallets.TestUtilities\Pragmatest.Wallets.TestUtilities.csproj", "{55BD0470-72C6-40BE-9EF4-6C43117A16A8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pragmatest.Wallets.Web.IntegrationTests", "test\Pragmatest.Wallets.Web.IntegrationTests\Pragmatest.Wallets.Web.IntegrationTests.csproj", "{8DDC68A8-A64D-43F5-9713-7B87CA8F547F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmatest.Wallets.UnitTests", "test\Pragmatest.Wallets.UnitTests\Pragmatest.Wallets.UnitTests.csproj", "{151911EB-C25B-435D-B9A2-A375E34D09A4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +43,18 @@ Global
 		{98FAA612-5563-4BCB-9DE4-D07FA3DFA6D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98FAA612-5563-4BCB-9DE4-D07FA3DFA6D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98FAA612-5563-4BCB-9DE4-D07FA3DFA6D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55BD0470-72C6-40BE-9EF4-6C43117A16A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55BD0470-72C6-40BE-9EF4-6C43117A16A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55BD0470-72C6-40BE-9EF4-6C43117A16A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55BD0470-72C6-40BE-9EF4-6C43117A16A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8DDC68A8-A64D-43F5-9713-7B87CA8F547F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8DDC68A8-A64D-43F5-9713-7B87CA8F547F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8DDC68A8-A64D-43F5-9713-7B87CA8F547F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8DDC68A8-A64D-43F5-9713-7B87CA8F547F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{151911EB-C25B-435D-B9A2-A375E34D09A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{151911EB-C25B-435D-B9A2-A375E34D09A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{151911EB-C25B-435D-B9A2-A375E34D09A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{151911EB-C25B-435D-B9A2-A375E34D09A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -46,6 +64,9 @@ Global
 		{FE8C5D7A-ABE8-45F8-BA26-8A6F87525F62} = {2A4C5C33-0D2B-4FAF-B193-1C438BA8F326}
 		{1ADEBE24-E294-4027-A46C-87CC2E7266E4} = {5C567360-00BF-4096-913A-FE54FBCF646F}
 		{98FAA612-5563-4BCB-9DE4-D07FA3DFA6D4} = {5C567360-00BF-4096-913A-FE54FBCF646F}
+		{55BD0470-72C6-40BE-9EF4-6C43117A16A8} = {2A4C5C33-0D2B-4FAF-B193-1C438BA8F326}
+		{8DDC68A8-A64D-43F5-9713-7B87CA8F547F} = {2A4C5C33-0D2B-4FAF-B193-1C438BA8F326}
+		{151911EB-C25B-435D-B9A2-A375E34D09A4} = {2A4C5C33-0D2B-4FAF-B193-1C438BA8F326}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {98E14BA4-4AE9-4656-A57C-E1808EE9B6EF}

@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CompareNETObjects" Version="4.65.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
     <PackageReference Include="Moq" Version="4.13.1" />
     <PackageReference Include="xunit" Version="2.4.0" />
@@ -15,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Pragmatest.Wallets.Web\Pragmatest.Wallets.Web.csproj" />
+    <ProjectReference Include="..\..\src\Pragmatest.Wallets.Data\Pragmatest.Wallets.Data.csproj" />
     <ProjectReference Include="..\..\src\Pragmatest.Wallets\Pragmatest.Wallets.csproj" />
   </ItemGroup>
 
