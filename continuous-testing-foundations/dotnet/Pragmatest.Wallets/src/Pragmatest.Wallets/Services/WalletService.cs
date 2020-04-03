@@ -2,13 +2,17 @@
 using Pragmatest.Wallets.Data.Repositories;
 using Pragmatest.Wallets.Models;
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+
+[assembly: InternalsVisibleTo("Pragmatest.Wallets.UnitTests")]
 
 namespace Pragmatest.Wallets.Services
 {
     internal class WalletService : IWalletService
     {
         private readonly IWalletRepository _walletRepository;
+
         public WalletService(IWalletRepository walletRepository)
         {
             _walletRepository = walletRepository;
