@@ -39,6 +39,8 @@ namespace Pragmatest.Wallets.Web.IntegrationTests
             // Act
             HttpResponseMessage response = await client.GetAsync("Wallet/Balance");
 
+            
+
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             
