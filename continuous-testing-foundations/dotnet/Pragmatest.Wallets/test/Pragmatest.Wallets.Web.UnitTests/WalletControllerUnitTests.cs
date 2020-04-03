@@ -17,9 +17,11 @@ namespace Pragmatest.Wallets.Web.UnitTests
         [Fact]
         public async Task Balance_GetBalanceIs4_ReturnsOkAndBalance4()
         {
-            // Arrange 
-            Balance expectedBalance = new Balance() { Amount = 4 };
-            BalanceResponse expectedBalanceResponse = new BalanceResponse() { Amount = 4 };
+            // Arrange
+            decimal expectedBalanceAmount = 4;
+
+            Balance expectedBalance = new Balance() { Amount = expectedBalanceAmount };
+            BalanceResponse expectedBalanceResponse = new BalanceResponse() { Amount = expectedBalanceAmount };
 
             ILogger<WalletController> logger = Mock.Of<ILogger<WalletController>>();
 
@@ -54,16 +56,19 @@ namespace Pragmatest.Wallets.Web.UnitTests
         [Fact]
         public async Task Deposit_Deposit10_ReturnsOkAndBalance15()
         {
-
             // Arrange
-            Balance expectedBalance = new Balance() { Amount = 15 };
-            BalanceResponse expectedBalanceResponse = new BalanceResponse() { Amount = 15 };
+            decimal expectedBalanceAmount = 15;
+            decimal depositAmount = 10;
+
+
+            Balance expectedBalance = new Balance() { Amount = expectedBalanceAmount };
+            BalanceResponse expectedBalanceResponse = new BalanceResponse() { Amount = expectedBalanceAmount };
 
             ILogger<WalletController> logger = Mock.Of<ILogger<WalletController>>();
 
             Mock<IWalletService> walletServiceMock = new Mock<IWalletService>();
 
-            Deposit deposit = new Deposit { Amount = 10 };
+            Deposit deposit = new Deposit { Amount = depositAmount };
 
             walletServiceMock
                 .Setup(walletService => walletService.DepositFundsAsync(deposit))
@@ -71,7 +76,7 @@ namespace Pragmatest.Wallets.Web.UnitTests
 
             IWalletService walletService = walletServiceMock.Object;
 
-            DepositRequest depositRequest = new DepositRequest { Amount = 10 };
+            DepositRequest depositRequest = new DepositRequest { Amount = depositAmount };
 
             IMapper mapper = Mock.Of<IMapper>(mapper => mapper.Map<Deposit>(depositRequest) == deposit
                                     && mapper.Map<BalanceResponse>(expectedBalance) == expectedBalanceResponse);
@@ -93,6 +98,78 @@ namespace Pragmatest.Wallets.Web.UnitTests
 
         }
 
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-10)]
+        public async Task Deposit_DepositInvalidAmounts_ReturnsBadRequest(int depositAmount)
+        {
+            // Arrange
+            ILogger<WalletController> logger = Mock.Of<ILogger<WalletController>>();
 
+            Mock<IWalletService> walletServiceMock = new Mock<IWalletService>();
+
+            Deposit deposit = new Deposit { Amount = depositAmount };
+
+            IWalletService walletService = walletServiceMock.Object;
+
+            DepositRequest depositRequest = new DepositRequest { Amount = depositAmount };
+
+            IMapper mapper = Mock.Of<IMapper>(mapper => mapper.Map<Deposit>(depositRequest) == deposit);
+
+            WalletController walletController = new WalletController(logger, mapper, walletService);
+
+            // Act
+            ActionResult<BalanceResponse> actionResult = await walletController.Deposit(depositRequest);
+            ActionResult actualActionResult = actionResult.Result;
+
+            // Assert
+            BadRequestResult badRequestResult = Assert.IsType<BadRequestResult>(actionResult.Result);
+
+            walletServiceMock.Verify(walletService => walletService.DepositFundsAsync(deposit), Times.Never);
+            walletServiceMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task Withdrawal_Withdraw20_ReturnsOkAndBalance5()
+        {
+            // Arrange
+            decimal expectedBalanceAmount = 5;
+            decimal withdrawalAmount = 20;
+            
+            Balance expectedBalance = new Balance() { Amount = expectedBalanceAmount };
+            BalanceResponse expectedBalanceResponse = new BalanceResponse() { Amount = expectedBalanceAmount };
+
+            ILogger<WalletController> logger = Mock.Of<ILogger<WalletController>>();
+
+            Mock<IWalletService> walletServiceMock = new Mock<IWalletService>();
+
+            Withdrawal withdrawal = new Withdrawal { Amount = withdrawalAmount };
+
+            walletServiceMock
+                .Setup(walletService => walletService.WithdrawFundsAsync(withdrawal))
+                .Returns(Task.FromResult(expectedBalance));
+
+            IWalletService walletService = walletServiceMock.Object;
+
+            WithdrawalRequest withdrawalRequest = new WithdrawalRequest { Amount = withdrawalAmount };
+
+            IMapper mapper = Mock.Of<IMapper>(mapper => mapper.Map<Withdrawal>(withdrawalRequest) == withdrawal
+                                    && mapper.Map<BalanceResponse>(expectedBalance) == expectedBalanceResponse);
+
+            WalletController walletController = new WalletController(logger, mapper, walletService);
+
+            // Act
+            ActionResult<BalanceResponse> actionResult = await walletController.Withdraw(withdrawalRequest);
+            ActionResult actualActionResult = actionResult.Result;
+
+            // Assert
+            OkObjectResult okObjectResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+            BalanceResponse actualBalanceResponse = Assert.IsType<BalanceResponse>(okObjectResult.Value);
+
+            Assert.Equal(expectedBalanceResponse, actualBalanceResponse);
+
+            walletServiceMock.Verify(walletService => walletService.WithdrawFundsAsync(withdrawal), Times.Once);
+            walletServiceMock.VerifyNoOtherCalls();
+        }        
     }
 }
