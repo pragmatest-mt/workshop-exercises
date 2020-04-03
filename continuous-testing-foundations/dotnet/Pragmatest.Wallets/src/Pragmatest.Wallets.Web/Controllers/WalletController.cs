@@ -38,6 +38,11 @@ namespace Pragmatest.Wallets.Web.Controllers
         {
             Deposit deposit = _mapper.Map<Deposit>(depositRequest);
 
+            if (deposit.Amount <= 0)
+            {
+                return BadRequest();
+            }
+
             Balance balance =  await _walletService.DepositFundsAsync(deposit);
 
             BalanceResponse balanceResponse = _mapper.Map<BalanceResponse>(balance);

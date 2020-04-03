@@ -35,12 +35,7 @@ namespace Pragmatest.Wallets.Services
         public async Task<Balance> DepositFundsAsync(Deposit deposit)
         {
             decimal entryAmount = deposit.Amount;
-            
-            if (entryAmount <= 0)
-            {
-                throw new ArgumentException("Deposit amount has to be greater than or equal to 0");
-            }
-
+        
             Balance currentBalance = await GetBalanceAsync();
             decimal currentBalanceAmount = currentBalance.Amount;
             
