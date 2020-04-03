@@ -97,34 +97,34 @@ namespace Pragmatest.Wallets.UnitTests
             walletRepositoryMock.Verify(walletRepository => walletRepository.GetLastWalletEntryAsync(), Times.Once);
         }
 
-        [Theory]
-        [InlineData(10, 5, 0)]
-        [InlineData(10, 5, -10)]
-        public async Task DepositFundsAsync_DifferentInvalidDepositAmounts_ThrowsException(decimal lastTransactionBalance, decimal lastTransactionAmount, decimal depositAmount)
-        {
-            //Arrange
-            WalletEntry lastTransaction = new WalletEntry { Amount = lastTransactionAmount, BalanceBefore = lastTransactionBalance };
+        //[Theory]
+        //[InlineData(10, 5, 0)]
+        //[InlineData(10, 5, -10)]
+        //public async Task DepositFundsAsync_DifferentInvalidDepositAmounts_ThrowsException(decimal lastTransactionBalance, decimal lastTransactionAmount, decimal depositAmount)
+        //{
+        //    //Arrange
+        //    WalletEntry lastTransaction = new WalletEntry { Amount = lastTransactionAmount, BalanceBefore = lastTransactionBalance };
 
-            Mock<IWalletRepository> walletRepositoryMock = new Mock<IWalletRepository>();
-            walletRepositoryMock
-                .Setup(walletRepository => walletRepository.GetLastWalletEntryAsync())
-                .Returns(Task.FromResult(lastTransaction));
+        //    Mock<IWalletRepository> walletRepositoryMock = new Mock<IWalletRepository>();
+        //    walletRepositoryMock
+        //        .Setup(walletRepository => walletRepository.GetLastWalletEntryAsync())
+        //        .Returns(Task.FromResult(lastTransaction));
 
-            IWalletRepository walletRepository = walletRepositoryMock.Object;
+        //    IWalletRepository walletRepository = walletRepositoryMock.Object;
 
-            IWalletService walletService = new WalletService(walletRepository);
+        //    IWalletService walletService = new WalletService(walletRepository);
 
-            Deposit deposit = new Deposit { Amount = depositAmount };
+        //    Deposit deposit = new Deposit { Amount = depositAmount };
 
-            // Act
-            async Task depositTask() => await walletService.DepositFundsAsync(deposit);
+        //    // Act
+        //    async Task depositTask() => await walletService.DepositFundsAsync(deposit);
 
-            // Assert
-            await Assert.ThrowsAsync<ArgumentException>(depositTask);
+        //    // Assert
+        //    await Assert.ThrowsAsync<ArgumentException>(depositTask);
                        
 
-            walletRepositoryMock.Verify(walletRepository => walletRepository.GetLastWalletEntryAsync(), Times.Never);
-        }
+        //    walletRepositoryMock.Verify(walletRepository => walletRepository.GetLastWalletEntryAsync(), Times.Never);
+        //}
 
         [Fact]
         public async Task WithdrawFundsAsync_ValidWithdrawalAmount_ReturnsExpectedBalance()
