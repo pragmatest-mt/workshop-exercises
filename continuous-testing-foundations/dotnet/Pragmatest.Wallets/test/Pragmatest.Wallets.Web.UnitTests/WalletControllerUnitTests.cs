@@ -76,7 +76,7 @@ namespace Pragmatest.Wallets.Web.UnitTests
 
             IWalletService walletService = walletServiceMock.Object;
 
-            DepositRequest depositRequest = new DepositRequest { Amount = depositAmount };
+            WithdrawalRequest depositRequest = new WithdrawalRequest { Amount = depositAmount };
 
             IMapper mapper = Mock.Of<IMapper>(mapper => mapper.Map<Deposit>(depositRequest) == deposit
                                     && mapper.Map<BalanceResponse>(expectedBalance) == expectedBalanceResponse);
@@ -112,7 +112,7 @@ namespace Pragmatest.Wallets.Web.UnitTests
 
             IWalletService walletService = walletServiceMock.Object;
 
-            DepositRequest depositRequest = new DepositRequest { Amount = depositAmount };
+            WithdrawalRequest depositRequest = new WithdrawalRequest { Amount = depositAmount };
 
             IMapper mapper = Mock.Of<IMapper>(mapper => mapper.Map<Deposit>(depositRequest) == deposit);
 
