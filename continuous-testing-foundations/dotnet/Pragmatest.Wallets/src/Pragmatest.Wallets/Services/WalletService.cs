@@ -1,5 +1,6 @@
 ﻿using Pragmatest.Wallets.Data.Models;
 using Pragmatest.Wallets.Data.Repositories;
+using Pragmatest.Wallets.Exceptions;
 using Pragmatest.Wallets.Models;
 using System;
 using System.Runtime.CompilerServices;
@@ -22,6 +23,7 @@ namespace Pragmatest.Wallets.Services
         {
             WalletEntry walletEntry = await _walletRepository.GetLastWalletEntryAsync();
 
+            // Default BalanceBefore to 0 if there are no transactions
             decimal amount = walletEntry == default(WalletEntry) ? 0 : (walletEntry.BalanceBefore + walletEntry.Amount);
             
             Balance currentBalance = new Balance
@@ -64,7 +66,7 @@ namespace Pragmatest.Wallets.Services
 
             if (entryAmount > currentBalance.Amount)
             {
-                throw new InvalidOperationException("There are insufficient funds");
+                throw new InsufficientBalanceException();
             }
             
             entryAmount *= -1;
@@ -77,7 +79,7 @@ namespace Pragmatest.Wallets.Services
             };
 
             await _walletRepository.InsertWalletEntryAsync(withdrawalEntry);
-
+            
             Balance newBalance = new Balance
             {
                 Amount = currentBalanceAmount + entryAmount
