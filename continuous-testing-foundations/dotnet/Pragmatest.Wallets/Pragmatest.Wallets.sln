@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pragmatest.Wallets.Web.Inte
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pragmatest.Wallets.UnitTests", "test\Pragmatest.Wallets.UnitTests\Pragmatest.Wallets.UnitTests.csproj", "{151911EB-C25B-435D-B9A2-A375E34D09A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmatest.Wallets.Data.IntegrationTests", "test\Pragmatest.Wallets.Data.UnitTests\Pragmatest.Wallets.Data.IntegrationTests.csproj", "{839975A4-0934-4C2C-90F8-782446AA2F90}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pragmatest.Wallets.Data.IntegrationTests", "test\Pragmatest.Wallets.Data.IntegrationTests\Pragmatest.Wallets.Data.IntegrationTests.csproj", "{839975A4-0934-4C2C-90F8-782446AA2F90}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
