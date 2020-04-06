@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Pragmatest.Wallets.Data
 {
-    public class WalletContext : DbContext, IWalletContext
+    internal class WalletContext : DbContext
     {
         public DbSet<WalletEntry> Transactions { get; set; }
 

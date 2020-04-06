@@ -1,24 +1,28 @@
-﻿using Pragmatest.Wallets.Data.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Pragmatest.Wallets.Data.Models;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+
+[assembly: InternalsVisibleTo("Pragmatest.Wallets.Data.IntegrationTests")]
 
 namespace Pragmatest.Wallets.Data.Repositories
 {
     internal class WalletRepository : IWalletRepository
     {
-        private readonly IWalletContext _walletContext;
+        private readonly WalletContext _walletContext;
 
-        public WalletRepository(IWalletContext walletContext)
+        public WalletRepository(WalletContext walletContext)
         {
             _walletContext = walletContext;
         }
                 
-        public Task<WalletEntry> GetLastWalletEntryAsync()
+        public async Task<WalletEntry> GetLastWalletEntryAsync()
         {
-            return Task.FromResult(
-                _walletContext.Transactions
+            return await _walletContext
+                .Transactions
                 .OrderByDescending(walletEntry => walletEntry.EventTime)
-                .FirstOrDefault());
+                .FirstOrDefaultAsync();
         }
 
         public Task InsertWalletEntryAsync(WalletEntry walletEntry)

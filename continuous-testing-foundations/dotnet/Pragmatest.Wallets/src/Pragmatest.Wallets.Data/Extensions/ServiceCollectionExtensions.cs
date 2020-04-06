@@ -8,7 +8,7 @@ namespace Pragmatest.Wallets.Data.Extensions
     {
         public static IServiceCollection RegisterWalletRepository(this IServiceCollection services)
         {
-            services.AddDbContext<IWalletContext, WalletContext>(context => context.UseInMemoryDatabase("Wallet"));
+            services.AddDbContext<WalletContext>(context => context.UseInMemoryDatabase("Wallet"));
             services.AddScoped<IWalletRepository, WalletRepository>();
             return services;
         }
