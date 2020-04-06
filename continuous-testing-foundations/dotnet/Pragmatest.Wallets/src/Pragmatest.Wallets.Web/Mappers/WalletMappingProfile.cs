@@ -9,7 +9,7 @@ namespace Pragmatest.Wallets.Web.Mappers
         public WalletMappingProfile()
         {
             CreateMap<Balance, BalanceResponse>();
-            CreateMap<WithdrawalRequest, Deposit>();
+            CreateMap<DepositRequest, Deposit>();
             CreateMap<WithdrawalRequest, Withdrawal>();
         }
     }

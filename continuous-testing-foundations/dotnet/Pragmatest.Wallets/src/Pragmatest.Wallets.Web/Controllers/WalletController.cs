@@ -34,7 +34,7 @@ namespace Pragmatest.Wallets.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<BalanceResponse>> Deposit(WithdrawalRequest depositRequest)
+        public async Task<ActionResult<BalanceResponse>> Deposit(DepositRequest depositRequest)
         {
             Deposit deposit = _mapper.Map<Deposit>(depositRequest);
 
