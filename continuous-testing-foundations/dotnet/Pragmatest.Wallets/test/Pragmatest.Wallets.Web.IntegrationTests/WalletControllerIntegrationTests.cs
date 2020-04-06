@@ -2,6 +2,7 @@ using KellermanSoftware.CompareNetObjects;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Moq;
 using Newtonsoft.Json;
+using Pragmatest.Wallets.Exceptions;
 using Pragmatest.Wallets.Models;
 using Pragmatest.Wallets.Services;
 using Pragmatest.Wallets.TestUtilities;
@@ -195,8 +196,6 @@ namespace Pragmatest.Wallets.Web.IntegrationTests
 
             Mock<IWalletService> walletServiceMock = new Mock<IWalletService>();
 
-            Withdrawal withdrawal = new Withdrawal { Amount = withdrawalAmount };
-
             IWalletService walletService = walletServiceMock.Object;
 
             WebApplicationFactory<Startup> factory = new CustomWebApplicationFactory<Startup>(services =>
@@ -214,6 +213,43 @@ namespace Pragmatest.Wallets.Web.IntegrationTests
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            walletServiceMock.VerifyNoOtherCalls();
+        }
+
+        [Theory]
+        [InlineData(1000)]
+        public async Task Withdrawal_WithdrawalInsufficientBalanceException_ReturnsBadRequest(int withdrawalAmount)
+        {
+            // Arrange
+            string endpoint = "Wallet/Withdraw";
+
+            Mock<IWalletService> walletServiceMock = new Mock<IWalletService>();
+
+            Withdrawal withdrawal = new Withdrawal { Amount = withdrawalAmount };
+            CompareLogic compare = new CompareLogic();
+
+            walletServiceMock
+             .Setup(walletService => walletService.WithdrawFundsAsync(It.Is<Withdrawal>(actualWithdrawal => compare.Compare(withdrawal, actualWithdrawal).AreEqual)))
+             .Throws<InsufficientBalanceException>();
+
+            IWalletService walletService = walletServiceMock.Object;
+            
+            WebApplicationFactory<Startup> factory = new CustomWebApplicationFactory<Startup>(services =>
+                services.SwapTransient(provider => walletService)
+            );
+
+            WithdrawalRequest withdrawalRequest = new WithdrawalRequest { Amount = withdrawalAmount };
+
+            StringContent content = new StringContent(JsonConvert.SerializeObject(withdrawalRequest), Encoding.UTF8, "application/json");
+
+            HttpClient client = factory.CreateClient();
+
+            // Act  
+            HttpResponseMessage response = await client.PostAsync(endpoint, content);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            walletServiceMock.Verify(walletService => walletService.WithdrawFundsAsync(It.Is<Withdrawal>(actualWithdrawal => compare.Compare(withdrawal, actualWithdrawal).AreEqual)), Times.Once);
             walletServiceMock.VerifyNoOtherCalls();
         }
     }

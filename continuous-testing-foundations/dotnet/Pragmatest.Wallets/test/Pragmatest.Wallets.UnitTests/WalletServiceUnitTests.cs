@@ -5,7 +5,6 @@ using Pragmatest.Wallets.Data.Repositories;
 using Pragmatest.Wallets.Exceptions;
 using Pragmatest.Wallets.Models;
 using Pragmatest.Wallets.Services;
-using System;
 using System.Threading.Tasks;
 using Xunit;
 
