@@ -35,6 +35,7 @@ namespace Pragmatest.Wallets.Services
         public async Task<Balance> DepositFundsAsync(Deposit deposit)
         {
             decimal entryAmount = deposit.Amount;
+        
             Balance currentBalance = await GetBalanceAsync();
             decimal currentBalanceAmount = currentBalance.Amount;
             
@@ -57,9 +58,16 @@ namespace Pragmatest.Wallets.Services
 
         public async Task<Balance> WithdrawFundsAsync(Withdrawal withdrawal)
         {
-            decimal entryAmount = -1 * withdrawal.Amount;
+            decimal entryAmount = withdrawal.Amount;
             Balance currentBalance = await GetBalanceAsync();
             decimal currentBalanceAmount = currentBalance.Amount;
+
+            if (entryAmount > currentBalance.Amount)
+            {
+                throw new InvalidOperationException("There are insufficient funds");
+            }
+            
+            entryAmount *= -1;
 
             WalletEntry withdrawalEntry = new WalletEntry()
             {

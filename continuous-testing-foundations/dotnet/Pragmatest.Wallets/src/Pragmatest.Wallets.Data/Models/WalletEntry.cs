@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Pragmatest.Wallets.Data.Models
 {
     public class WalletEntry
     {
         public string Id { get; set; }
-        public DateTimeOffset EventTime { get; set; }
+        public DateTimeOffset EventTime { get; set; } = DateTimeOffset.Now.UtcDateTime;
+
         public decimal Amount { get; set; }
         public decimal BalanceBefore { get; set; }
 
@@ -15,7 +14,5 @@ namespace Pragmatest.Wallets.Data.Models
         {
             Id = Guid.NewGuid().ToString();
         }
-
-
     }
 }

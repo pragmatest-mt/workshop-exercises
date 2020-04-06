@@ -34,9 +34,14 @@ namespace Pragmatest.Wallets.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Deposit(DepositRequest depositRequest)
+        public async Task<ActionResult<BalanceResponse>> Deposit(DepositRequest depositRequest)
         {
             Deposit deposit = _mapper.Map<Deposit>(depositRequest);
+
+            if (deposit.Amount <= 0)
+            {
+                return BadRequest();
+            }
 
             Balance balance =  await _walletService.DepositFundsAsync(deposit);
 
@@ -46,7 +51,7 @@ namespace Pragmatest.Wallets.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Withdraw(WithdrawalRequest withdrawalRequest)
+        public async Task<ActionResult<BalanceResponse>> Withdraw(WithdrawalRequest withdrawalRequest)
         {
             Withdrawal withdrawal = _mapper.Map<Withdrawal>(withdrawalRequest); 
 
