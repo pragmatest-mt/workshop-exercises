@@ -5,6 +5,7 @@ using Pragmatest.Wallets.Data.Repositories;
 using Pragmatest.Wallets.Exceptions;
 using Pragmatest.Wallets.Models;
 using Pragmatest.Wallets.Services;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -12,11 +13,16 @@ namespace Pragmatest.Wallets.UnitTests
 {
     public class WalletServiceUnitTests
     {
-        [Fact]
+        private static readonly Func<WalletEntry, decimal, decimal, bool> _compareWalletEntry = (walletEntry, amount, balanceBefore) =>
+                          walletEntry.Amount == amount &&
+                          walletEntry.BalanceBefore == balanceBefore;
+
+       [Fact]
         public async Task GetBalanceAsync_NoPreviousTransactions_Returns0()
         {
-            // Arrange
-            Balance expectedBalance = new Balance { Amount = 0 };
+            //// Arrange
+
+            // Setup Mocks
 
             Mock<IWalletRepository> walletRepositoryMock = new Mock<IWalletRepository>();
             walletRepositoryMock
@@ -25,12 +31,20 @@ namespace Pragmatest.Wallets.UnitTests
 
             IWalletRepository walletRepository = walletRepositoryMock.Object;
 
+            // Initialize SUT
+
             IWalletService walletService = new WalletService(walletRepository);
 
-            // Act
+            // Set Expectations
+
+            Balance expectedBalance = new Balance { Amount = 0 };
+
+            //// Act
+
             Balance actualBalance = await walletService.GetBalanceAsync();
 
-            // Assert
+            //// Assert
+
             actualBalance.ShouldCompare(expectedBalance);
 
             walletRepositoryMock.Verify(walletRepository => walletRepository.GetLastWalletEntryAsync(), Times.Once);
@@ -39,12 +53,13 @@ namespace Pragmatest.Wallets.UnitTests
         [Theory]
         [InlineData(5, 10, 15)]
         [InlineData(5, -2, 3)]
-        public async Task GetBalanceAsync_ExistingLastTransaction_ReturnsExpectedBalance(decimal lastTransactionBalance, decimal lastTransactionAmount, decimal expectedBalanceAmont)
+        public async Task GetBalanceAsync_ExistingLastTransaction_ReturnsExpectedBalance(decimal lastTransactionBalanceBefore, decimal lastTransactionAmount, decimal expectedBalanceAmont)
         {
-            // Arrange
-            Balance expectedBalance = new Balance { Amount = expectedBalanceAmont };
+            //// Arrange
 
-            WalletEntry lastTransaction = new WalletEntry { Amount = lastTransactionAmount, BalanceBefore = lastTransactionBalance };
+            // Setup Mocks
+
+            WalletEntry lastTransaction = new WalletEntry { Amount = lastTransactionAmount, BalanceBefore = lastTransactionBalanceBefore };
 
             Mock<IWalletRepository> walletRepositoryMock = new Mock<IWalletRepository>();
             walletRepositoryMock
@@ -53,12 +68,20 @@ namespace Pragmatest.Wallets.UnitTests
 
             IWalletRepository walletRepository = walletRepositoryMock.Object;
 
+            // Initialize SUT
+
             IWalletService walletService = new WalletService(walletRepository);
 
-            // Act
+            // Set Expectations
+
+            Balance expectedBalance = new Balance { Amount = expectedBalanceAmont };
+
+            //// Act
+
             Balance actualBalance = await walletService.GetBalanceAsync();
 
-            // Assert
+            //// Assert
+
             actualBalance.ShouldCompare(expectedBalance);
 
             walletRepositoryMock.Verify(walletRepository => walletRepository.GetLastWalletEntryAsync(), Times.Once);
@@ -67,80 +90,121 @@ namespace Pragmatest.Wallets.UnitTests
         [Fact]
         public async Task DepositFundsAsync_ValidDepositAmount_ReturnsExpectedBalance()
         {
-            //Arrange
-            decimal lastTransactionBalance = 10;
+            //// Arrange
+
+            decimal lastTransactionBalanceBefore = 10;
             decimal lastTransactionAmount = 5;
             decimal depositAmount = 5;
-            decimal expectedBalanceAmount = 20;
+            decimal depositBalanceBefore = 15;
 
-            Balance expectedBalance = new Balance { Amount = expectedBalanceAmount };
-
-            WalletEntry lastTransaction = new WalletEntry { Amount = lastTransactionAmount, BalanceBefore = lastTransactionBalance };
+            // Setup Mocks
 
             Mock<IWalletRepository> walletRepositoryMock = new Mock<IWalletRepository>();
+
+            WalletEntry lastTransaction = new WalletEntry { Amount = lastTransactionAmount, BalanceBefore = lastTransactionBalanceBefore };
             walletRepositoryMock
                 .Setup(walletRepository => walletRepository.GetLastWalletEntryAsync())
                 .Returns(Task.FromResult(lastTransaction));
 
+            walletRepositoryMock
+                .Setup(walletRepositoryMock => walletRepositoryMock.InsertWalletEntryAsync(It.Is<WalletEntry>(
+                        walletEntry => _compareWalletEntry(walletEntry, depositAmount, depositBalanceBefore)
+                    ))
+                )
+                .Returns(Task.CompletedTask);
+
             IWalletRepository walletRepository = walletRepositoryMock.Object;
 
-            IWalletService walletService = new WalletService(walletRepository);
+            // Initialize SUT
 
+            IWalletService walletService = new WalletService(walletRepository);
             Deposit deposit = new Deposit { Amount = depositAmount };
 
-            // Act
+            // Set expectations
+
+            decimal expectedBalanceAmount = 20;
+            Balance expectedBalance = new Balance { Amount = expectedBalanceAmount };
+
+            //// Act
+
             Balance actualBalance = await walletService.DepositFundsAsync(deposit);
 
-            // Assert
+            //// Assert
+
             actualBalance.ShouldCompare(expectedBalance);
 
             walletRepositoryMock.Verify(walletRepository => walletRepository.GetLastWalletEntryAsync(), Times.Once);
+            walletRepositoryMock.Verify(walletRepository => walletRepository.InsertWalletEntryAsync(It.Is<WalletEntry>(
+                    walletEntry => _compareWalletEntry(walletEntry, depositAmount, depositBalanceBefore))
+                ), Times.Once);
+            walletRepositoryMock.VerifyNoOtherCalls();
         }
 
         [Fact]
         public async Task WithdrawFundsAsync_ValidWithdrawalAmount_ReturnsExpectedBalance()
         {
-            //Arrange
-            decimal lastTransactionBalance = 20;
+            ////Arrange
+            
+            decimal lastTransactionBalanceBefore = 20;
             decimal lastTransactionAmount = 10;
             decimal withdrawalAmount = 15;
-            decimal expectedBalanceAmount = 15;
+            decimal withdrawalBalanceBefore = 30;
 
-            Balance expectedBalance = new Balance { Amount = expectedBalanceAmount };
-
-            WalletEntry lastTransaction = new WalletEntry { Amount = lastTransactionAmount, BalanceBefore = lastTransactionBalance };
-
+            // Setup Mocks
+           
             Mock<IWalletRepository> walletRepositoryMock = new Mock<IWalletRepository>();
+
+            WalletEntry lastTransaction = new WalletEntry { Amount = lastTransactionAmount, BalanceBefore = lastTransactionBalanceBefore };
             walletRepositoryMock
                 .Setup(walletRepository => walletRepository.GetLastWalletEntryAsync())
                 .Returns(Task.FromResult(lastTransaction));
 
+            walletRepositoryMock
+                .Setup(walletRepositoryMock => walletRepositoryMock.InsertWalletEntryAsync(It.Is<WalletEntry>(
+                    walletEntry => _compareWalletEntry(walletEntry, withdrawalAmount, withdrawalBalanceBefore)))
+                )
+                .Returns(Task.CompletedTask);
+
             IWalletRepository walletRepository = walletRepositoryMock.Object;
 
+            // Initialize SUT 
+
             IWalletService walletService = new WalletService(walletRepository);
-
             Withdrawal withdrawal = new Withdrawal { Amount = withdrawalAmount };
+            
+            // Set expectations 
 
-            // Act
+            decimal expectedBalanceAmount = 15;
+            Balance expectedBalance = new Balance { Amount = expectedBalanceAmount };
+
+
+            //// Act
+            
             Balance actualBalance = await walletService.WithdrawFundsAsync(withdrawal);
 
-            // Assert
+            //// Assert
+            
             actualBalance.ShouldCompare(expectedBalance);
 
             walletRepositoryMock.Verify(walletRepository => walletRepository.GetLastWalletEntryAsync(), Times.Once);
+            walletRepositoryMock.Verify(walletRepository => walletRepository.InsertWalletEntryAsync(It.Is<WalletEntry>(
+                    walletEntry => _compareWalletEntry(walletEntry, -1 * withdrawalAmount, withdrawalBalanceBefore))
+                ), Times.Once);
+            walletRepositoryMock.VerifyNoOtherCalls();
         }
 
         [Fact]
         public async Task WithdrawalFundsAsync_WithdrawalAmountExceedsBalance_ThrowsInsufficientBalanceException()
         {
-            //Arrange
-            decimal lastTransactionBalance = 50;
+            ////Arrange
+            
+            decimal lastTransactionBalanceBefore = 50;
             decimal lastTransactionAmount = 10;
             decimal withdrawalAmount = 100;
 
+            // Setup Mocks 
 
-            WalletEntry lastTransaction = new WalletEntry { Amount = lastTransactionAmount, BalanceBefore = lastTransactionBalance };
-
+            WalletEntry lastTransaction = new WalletEntry { Amount = lastTransactionAmount, BalanceBefore = lastTransactionBalanceBefore };
             Mock<IWalletRepository> walletRepositoryMock = new Mock<IWalletRepository>();
             walletRepositoryMock
                 .Setup(walletRepository => walletRepository.GetLastWalletEntryAsync())
@@ -148,18 +212,21 @@ namespace Pragmatest.Wallets.UnitTests
 
             IWalletRepository walletRepository = walletRepositoryMock.Object;
 
+            // Initialize SUT 
+             
             IWalletService walletService = new WalletService(walletRepository);
-
             Withdrawal withdrawal = new Withdrawal { Amount = withdrawalAmount };
 
-            // Act
+            //// Act
+            
             async Task withdrawalTask() => await walletService.WithdrawFundsAsync(withdrawal);
 
-            // Assert
+            //// Assert
+            
             await Assert.ThrowsAsync<InsufficientBalanceException>(withdrawalTask);
 
-
             walletRepositoryMock.Verify(walletRepository => walletRepository.GetLastWalletEntryAsync(), Times.Once);
+            walletRepositoryMock.VerifyNoOtherCalls();
         }
     }
 }
