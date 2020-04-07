@@ -156,7 +156,7 @@ namespace Pragmatest.Wallets.Web.IntegrationTests
         }
 
         [Fact]
-        public async Task Withdraw_Withdraw5_Returns10Async()
+        public async Task Withdraw_Withdraw5_ReturnsOkPostWithdrawalBalanceAsync()
         {
             //// Arrange
             
