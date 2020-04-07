@@ -48,6 +48,7 @@ namespace Pragmatest.Wallets.UnitTests
             actualBalance.ShouldCompare(expectedBalance);
 
             walletRepositoryMock.Verify(walletRepository => walletRepository.GetLastWalletEntryAsync(), Times.Once);
+            walletRepositoryMock.VerifyNoOtherCalls();
         }
 
         [Theory]
@@ -85,6 +86,7 @@ namespace Pragmatest.Wallets.UnitTests
             actualBalance.ShouldCompare(expectedBalance);
 
             walletRepositoryMock.Verify(walletRepository => walletRepository.GetLastWalletEntryAsync(), Times.Once);
+            walletRepositoryMock.VerifyNoOtherCalls();
         }
 
         [Fact]
