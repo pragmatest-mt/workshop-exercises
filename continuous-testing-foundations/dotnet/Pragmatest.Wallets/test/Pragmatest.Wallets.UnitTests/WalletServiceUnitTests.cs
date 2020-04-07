@@ -5,6 +5,7 @@ using Pragmatest.Wallets.Data.Repositories;
 using Pragmatest.Wallets.Exceptions;
 using Pragmatest.Wallets.Models;
 using Pragmatest.Wallets.Services;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -12,7 +13,11 @@ namespace Pragmatest.Wallets.UnitTests
 {
     public class WalletServiceUnitTests
     {
-        [Fact]
+        private static readonly Func<WalletEntry, decimal, decimal, bool> _compareWalletEntry = (walletEntry, amount, balanceBefore) =>
+                          walletEntry.Amount == amount &&
+                          walletEntry.BalanceBefore == balanceBefore;
+
+       [Fact]
         public async Task GetBalanceAsync_NoPreviousTransactions_Returns0()
         {
             //// Arrange
@@ -90,6 +95,7 @@ namespace Pragmatest.Wallets.UnitTests
             decimal lastTransactionBalanceBefore = 10;
             decimal lastTransactionAmount = 5;
             decimal depositAmount = 5;
+            decimal depositBalanceBefore = 15;
 
             // Setup Mocks
 
@@ -102,9 +108,7 @@ namespace Pragmatest.Wallets.UnitTests
 
             walletRepositoryMock
                 .Setup(walletRepositoryMock => walletRepositoryMock.InsertWalletEntryAsync(It.Is<WalletEntry>(
-                    walletEntry =>
-                        walletEntry.Amount == depositAmount &&
-                        walletEntry.BalanceBefore == lastTransactionAmount + lastTransactionBalanceBefore
+                        walletEntry => _compareWalletEntry(walletEntry, depositAmount, depositBalanceBefore)
                     ))
                 )
                 .Returns(Task.CompletedTask);
@@ -131,10 +135,8 @@ namespace Pragmatest.Wallets.UnitTests
 
             walletRepositoryMock.Verify(walletRepository => walletRepository.GetLastWalletEntryAsync(), Times.Once);
             walletRepositoryMock.Verify(walletRepository => walletRepository.InsertWalletEntryAsync(It.Is<WalletEntry>(
-                    walletEntry =>
-                        walletEntry.Amount == depositAmount &&
-                        walletEntry.BalanceBefore == lastTransactionAmount + lastTransactionBalanceBefore
-                    )), Times.Once);
+                    walletEntry => _compareWalletEntry(walletEntry, depositAmount, depositBalanceBefore))
+                ), Times.Once);
             walletRepositoryMock.VerifyNoOtherCalls();
         }
 
@@ -146,7 +148,8 @@ namespace Pragmatest.Wallets.UnitTests
             decimal lastTransactionBalanceBefore = 20;
             decimal lastTransactionAmount = 10;
             decimal withdrawalAmount = 15;
-           
+            decimal withdrawalBalanceBefore = 30;
+
             // Setup Mocks
            
             Mock<IWalletRepository> walletRepositoryMock = new Mock<IWalletRepository>();
@@ -158,10 +161,7 @@ namespace Pragmatest.Wallets.UnitTests
 
             walletRepositoryMock
                 .Setup(walletRepositoryMock => walletRepositoryMock.InsertWalletEntryAsync(It.Is<WalletEntry>(
-                    walletEntry =>
-                        walletEntry.Amount == withdrawalAmount &&
-                        walletEntry.BalanceBefore == lastTransactionAmount + lastTransactionBalanceBefore
-                    ))
+                    walletEntry => _compareWalletEntry(walletEntry, withdrawalAmount, withdrawalBalanceBefore)))
                 )
                 .Returns(Task.CompletedTask);
 
@@ -188,10 +188,8 @@ namespace Pragmatest.Wallets.UnitTests
 
             walletRepositoryMock.Verify(walletRepository => walletRepository.GetLastWalletEntryAsync(), Times.Once);
             walletRepositoryMock.Verify(walletRepository => walletRepository.InsertWalletEntryAsync(It.Is<WalletEntry>(
-                    walletEntry =>
-                        walletEntry.Amount == -1 * withdrawalAmount &&
-                        walletEntry.BalanceBefore == lastTransactionAmount + lastTransactionBalanceBefore
-                    )), Times.Once);
+                    walletEntry => _compareWalletEntry(walletEntry, -1 * withdrawalAmount, withdrawalBalanceBefore))
+                ), Times.Once);
             walletRepositoryMock.VerifyNoOtherCalls();
         }
 
