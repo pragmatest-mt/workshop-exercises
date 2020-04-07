@@ -6,7 +6,7 @@ namespace Pragmatest.Wallets.Exceptions
     [Serializable]
     public class InsufficientBalanceException : Exception
     {
-        public InsufficientBalanceException() : base ("Invalid withdrawal amount.There are insufficient funds.")
+        public InsufficientBalanceException() : base ("Invalid withdrawal amount. There are insufficient funds.")
         {
         }
 
