@@ -2,7 +2,6 @@ using KellermanSoftware.CompareNetObjects;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Moq;
 using Newtonsoft.Json;
-using Pragmatest.Wallets.Exceptions;
 using Pragmatest.Wallets.Models;
 using Pragmatest.Wallets.Services;
 using Pragmatest.Wallets.TestUtilities;
@@ -70,14 +69,17 @@ namespace Pragmatest.Wallets.Web.IntegrationTests
 
             Mock<IWalletService> walletServiceMock = new Mock<IWalletService>();
 
-            Deposit expectedDeposit = new Deposit { Amount = depositAmount };
+            Deposit deposit = new Deposit { Amount = depositAmount };
             CompareLogic compare = new CompareLogic();
 
+            Deposit despositMatch = It.Is<Deposit>(actualDeposit => compare.Compare(deposit, actualDeposit).AreEqual);
+
+
+
+
             walletServiceMock
-             .Setup(walletService => 
-                walletService.DepositFundsAsync(It.Is<Deposit>(actualDeposit => compare.Compare(expectedDeposit, actualDeposit).AreEqual))
-             )
-             .Returns(Task.FromResult(expectedBalance));
+             .Setup(walletService => walletService.DepositFundsAsync(despositMatch))
+                 .Returns(Task.FromResult(expectedBalance));
 
             IWalletService walletService = walletServiceMock.Object;
 
@@ -101,7 +103,7 @@ namespace Pragmatest.Wallets.Web.IntegrationTests
             BalanceResponse actualBalanceResponse = await response.Content.ReadAsAsync<BalanceResponse>(new[] { new JsonMediaTypeFormatter() });
             actualBalanceResponse.ShouldCompare(expectedBalanceResponse);
 
-            walletServiceMock.Verify(walletService => walletService.DepositFundsAsync(It.Is<Deposit>(actualDeposit => compare.Compare(expectedDeposit, actualDeposit).AreEqual)), Times.Once);
+            walletServiceMock.Verify(walletService => walletService.DepositFundsAsync(It.IsAny<Deposit>()), Times.Once);
             walletServiceMock.VerifyNoOtherCalls();
         }
 
@@ -136,6 +138,8 @@ namespace Pragmatest.Wallets.Web.IntegrationTests
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+            walletServiceMock.Verify(walletService => walletService.DepositFundsAsync(deposit), Times.Never);
             walletServiceMock.VerifyNoOtherCalls();
         }
 
@@ -154,10 +158,9 @@ namespace Pragmatest.Wallets.Web.IntegrationTests
             Mock<IWalletService> walletServiceMock = new Mock<IWalletService>();
 
             Withdrawal withdrawal = new Withdrawal { Amount = withdrawalAmount };
-            CompareLogic compare = new CompareLogic();
 
             walletServiceMock
-             .Setup(walletService => walletService.WithdrawFundsAsync(It.Is<Withdrawal>(actualWithdrawal => compare.Compare(withdrawal, actualWithdrawal).AreEqual)))
+             .Setup(walletService => walletService.WithdrawFundsAsync(It.Is<Withdrawal>(d => d.Equals(withdrawal))))
                  .Returns(Task.FromResult(expectedBalance));
 
             IWalletService walletService = walletServiceMock.Object;
@@ -182,74 +185,7 @@ namespace Pragmatest.Wallets.Web.IntegrationTests
             BalanceResponse actualBalanceResponse = await response.Content.ReadAsAsync<BalanceResponse>(new[] { new JsonMediaTypeFormatter() });
             actualBalanceResponse.ShouldCompare(expectedBalanceResponse);
 
-            walletServiceMock.Verify(walletService => walletService.WithdrawFundsAsync(It.Is<Withdrawal>(actualWithdrawal => compare.Compare(withdrawal, actualWithdrawal).AreEqual)), Times.Once);
-            walletServiceMock.VerifyNoOtherCalls();
-        }
-
-        [Theory]
-        [InlineData(-1)]
-        [InlineData(-1000)]
-        public async Task Withdrawal_WithdrawalInvalidAmounts_ReturnsBadRequest(int withdrawalAmount)
-        {
-            // Arrange
-            string endpoint = "Wallet/Withdraw";
-
-            Mock<IWalletService> walletServiceMock = new Mock<IWalletService>();
-
-            IWalletService walletService = walletServiceMock.Object;
-
-            WebApplicationFactory<Startup> factory = new CustomWebApplicationFactory<Startup>(services =>
-                services.SwapTransient(provider => walletService)
-            );
-
-            WithdrawalRequest withdrawalRequest = new WithdrawalRequest { Amount = withdrawalAmount };
-
-            StringContent content = new StringContent(JsonConvert.SerializeObject(withdrawalRequest), Encoding.UTF8, "application/json");
-
-            HttpClient client = factory.CreateClient();
-
-            // Act  
-            HttpResponseMessage response = await client.PostAsync(endpoint, content);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            walletServiceMock.VerifyNoOtherCalls();
-        }
-
-        [Theory]
-        [InlineData(1000)]
-        public async Task Withdrawal_WithdrawalInsufficientBalanceException_ReturnsBadRequest(int withdrawalAmount)
-        {
-            // Arrange
-            string endpoint = "Wallet/Withdraw";
-
-            Mock<IWalletService> walletServiceMock = new Mock<IWalletService>();
-
-            Withdrawal withdrawal = new Withdrawal { Amount = withdrawalAmount };
-            CompareLogic compare = new CompareLogic();
-
-            walletServiceMock
-             .Setup(walletService => walletService.WithdrawFundsAsync(It.Is<Withdrawal>(actualWithdrawal => compare.Compare(withdrawal, actualWithdrawal).AreEqual)))
-             .Throws<InsufficientBalanceException>();
-
-            IWalletService walletService = walletServiceMock.Object;
-            
-            WebApplicationFactory<Startup> factory = new CustomWebApplicationFactory<Startup>(services =>
-                services.SwapTransient(provider => walletService)
-            );
-
-            WithdrawalRequest withdrawalRequest = new WithdrawalRequest { Amount = withdrawalAmount };
-
-            StringContent content = new StringContent(JsonConvert.SerializeObject(withdrawalRequest), Encoding.UTF8, "application/json");
-
-            HttpClient client = factory.CreateClient();
-
-            // Act  
-            HttpResponseMessage response = await client.PostAsync(endpoint, content);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            walletServiceMock.Verify(walletService => walletService.WithdrawFundsAsync(It.Is<Withdrawal>(actualWithdrawal => compare.Compare(withdrawal, actualWithdrawal).AreEqual)), Times.Once);
+            walletServiceMock.Verify(walletService => walletService.WithdrawFundsAsync(withdrawal), Times.Once);
             walletServiceMock.VerifyNoOtherCalls();
         }
     }

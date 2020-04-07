@@ -5,6 +5,7 @@ using Pragmatest.Wallets.Data.Repositories;
 using Pragmatest.Wallets.Exceptions;
 using Pragmatest.Wallets.Models;
 using Pragmatest.Wallets.Services;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -68,19 +69,26 @@ namespace Pragmatest.Wallets.UnitTests
         public async Task DepositFundsAsync_ValidDepositAmount_ReturnsExpectedBalance()
         {
             //Arrange
-            decimal lastTransactionBalance = 10;
-            decimal lastTransactionAmount = 5;
-            decimal depositAmount = 5;
-            decimal expectedBalanceAmount = 20;
+            decimal lastTransactionBalanceBefore = 1000;
+            decimal lastTransactionAmount = 5000;
+            decimal expectedBalanceBefore = 6000;
+            decimal depositAmount = 500;
+            decimal expectedBalanceAmount = 6500;
 
             Balance expectedBalance = new Balance { Amount = expectedBalanceAmount };
 
-            WalletEntry lastTransaction = new WalletEntry { Amount = lastTransactionAmount, BalanceBefore = lastTransactionBalance };
-
+            WalletEntry lastTransaction = new WalletEntry { Amount = lastTransactionAmount, BalanceBefore = lastTransactionBalanceBefore };
             Mock<IWalletRepository> walletRepositoryMock = new Mock<IWalletRepository>();
             walletRepositoryMock
                 .Setup(walletRepository => walletRepository.GetLastWalletEntryAsync())
                 .Returns(Task.FromResult(lastTransaction));
+
+            WalletEntry newTransaction = new WalletEntry { Amount = depositAmount, BalanceBefore = expectedBalanceBefore };
+            ICompareLogic compareLogic = new CompareLogic(new ComparisonConfig() { MembersToInclude = new List<string> {nameof(newTransaction.Amount), nameof(newTransaction.BalanceBefore)}});
+
+            walletRepositoryMock
+                .Setup(walletRepository => walletRepository.InsertWalletEntryAsync(It.Is<WalletEntry>(actualTransaction => compareLogic.Compare(newTransaction, actualTransaction).AreEqual)))
+                .Returns(Task.CompletedTask);
 
             IWalletRepository walletRepository = walletRepositoryMock.Object;
 
@@ -95,6 +103,30 @@ namespace Pragmatest.Wallets.UnitTests
             actualBalance.ShouldCompare(expectedBalance);
 
             walletRepositoryMock.Verify(walletRepository => walletRepository.GetLastWalletEntryAsync(), Times.Once);
+            walletRepositoryMock.Verify(walletRepository => walletRepository.InsertWalletEntryAsync(It.Is<WalletEntry>(actualTransaction => compareLogic.Compare(newTransaction, actualTransaction).AreEqual)), Times.Once);
+            walletRepositoryMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task DepositFundsAsync_UnderLimitDepositAmount_ThrowsLimitException()
+        {
+            //Arrange
+            decimal depositAmount = 299;
+
+            Mock<IWalletRepository> walletRepositoryMock = new Mock<IWalletRepository>();
+            IWalletRepository walletRepository = walletRepositoryMock.Object;
+
+            IWalletService walletService = new WalletService(walletRepository);
+
+            Deposit deposit = new Deposit { Amount = depositAmount };
+
+            // Act
+            async Task depositTask() => await walletService.DepositFundsAsync(deposit);
+
+            // Assert
+            await Assert.ThrowsAsync<LimitException>(depositTask);
+
+            walletRepositoryMock.VerifyNoOtherCalls();
         }
 
         [Fact]
