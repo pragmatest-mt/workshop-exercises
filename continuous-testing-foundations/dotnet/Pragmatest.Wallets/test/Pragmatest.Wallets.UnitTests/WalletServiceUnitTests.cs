@@ -172,7 +172,7 @@ namespace Pragmatest.Wallets.UnitTests
             IWalletService walletService = new WalletService(walletRepository);
             Withdrawal withdrawal = new Withdrawal { Amount = withdrawalAmount };
             
-            // Setup expectations 
+            // Set expectations 
 
             decimal expectedBalanceAmount = 15;
             Balance expectedBalance = new Balance { Amount = expectedBalanceAmount };
