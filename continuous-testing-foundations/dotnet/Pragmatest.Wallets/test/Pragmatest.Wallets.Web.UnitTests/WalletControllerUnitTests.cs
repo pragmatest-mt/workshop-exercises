@@ -5,7 +5,6 @@ using Moq;
 using Pragmatest.Wallets.Models;
 using Pragmatest.Wallets.Services;
 using Pragmatest.Wallets.Web.Controllers;
-using Pragmatest.Wallets.Web.Mappers;
 using Pragmatest.Wallets.Web.Models;
 using System.Threading.Tasks;
 using Xunit;
@@ -96,37 +95,6 @@ namespace Pragmatest.Wallets.Web.UnitTests
             walletServiceMock.Verify(walletService => walletService.DepositFundsAsync(deposit), Times.Once);
             walletServiceMock.VerifyNoOtherCalls();
 
-        }
-
-        [Theory]
-        [InlineData(0)]
-        [InlineData(-10)]
-        public async Task Deposit_DepositInvalidAmounts_ReturnsBadRequest(int depositAmount)
-        {
-            // Arrange
-            ILogger<WalletController> logger = Mock.Of<ILogger<WalletController>>();
-
-            Mock<IWalletService> walletServiceMock = new Mock<IWalletService>();
-
-            Deposit deposit = new Deposit { Amount = depositAmount };
-
-            IWalletService walletService = walletServiceMock.Object;
-
-            DepositRequest depositRequest = new DepositRequest { Amount = depositAmount };
-
-            IMapper mapper = Mock.Of<IMapper>(mapper => mapper.Map<Deposit>(depositRequest) == deposit);
-
-            WalletController walletController = new WalletController(logger, mapper, walletService);
-
-            // Act
-            ActionResult<BalanceResponse> actionResult = await walletController.Deposit(depositRequest);
-            ActionResult actualActionResult = actionResult.Result;
-
-            // Assert
-            BadRequestResult badRequestResult = Assert.IsType<BadRequestResult>(actionResult.Result);
-
-            walletServiceMock.Verify(walletService => walletService.DepositFundsAsync(deposit), Times.Never);
-            walletServiceMock.VerifyNoOtherCalls();
         }
 
         [Fact]

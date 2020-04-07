@@ -2,9 +2,9 @@ using KellermanSoftware.CompareNetObjects;
 using Moq;
 using Pragmatest.Wallets.Data.Models;
 using Pragmatest.Wallets.Data.Repositories;
+using Pragmatest.Wallets.Exceptions;
 using Pragmatest.Wallets.Models;
 using Pragmatest.Wallets.Services;
-using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -97,35 +97,6 @@ namespace Pragmatest.Wallets.UnitTests
             walletRepositoryMock.Verify(walletRepository => walletRepository.GetLastWalletEntryAsync(), Times.Once);
         }
 
-        //[Theory]
-        //[InlineData(10, 5, 0)]
-        //[InlineData(10, 5, -10)]
-        //public async Task DepositFundsAsync_DifferentInvalidDepositAmounts_ThrowsException(decimal lastTransactionBalance, decimal lastTransactionAmount, decimal depositAmount)
-        //{
-        //    //Arrange
-        //    WalletEntry lastTransaction = new WalletEntry { Amount = lastTransactionAmount, BalanceBefore = lastTransactionBalance };
-
-        //    Mock<IWalletRepository> walletRepositoryMock = new Mock<IWalletRepository>();
-        //    walletRepositoryMock
-        //        .Setup(walletRepository => walletRepository.GetLastWalletEntryAsync())
-        //        .Returns(Task.FromResult(lastTransaction));
-
-        //    IWalletRepository walletRepository = walletRepositoryMock.Object;
-
-        //    IWalletService walletService = new WalletService(walletRepository);
-
-        //    Deposit deposit = new Deposit { Amount = depositAmount };
-
-        //    // Act
-        //    async Task depositTask() => await walletService.DepositFundsAsync(deposit);
-
-        //    // Assert
-        //    await Assert.ThrowsAsync<ArgumentException>(depositTask);
-                       
-
-        //    walletRepositoryMock.Verify(walletRepository => walletRepository.GetLastWalletEntryAsync(), Times.Never);
-        //}
-
         [Fact]
         public async Task WithdrawFundsAsync_ValidWithdrawalAmount_ReturnsExpectedBalance()
         {
@@ -160,9 +131,8 @@ namespace Pragmatest.Wallets.UnitTests
         }
 
         [Fact]
-        public async Task WithdrawalFundsAsync_WithdrawalAmountExceedsBalance_ThrowsException()
+        public async Task WithdrawalFundsAsync_WithdrawalAmountExceedsBalance_ThrowsInsufficientBalanceException()
         {
-            //Arrange
             //Arrange
             decimal lastTransactionBalance = 50;
             decimal lastTransactionAmount = 10;
@@ -186,7 +156,7 @@ namespace Pragmatest.Wallets.UnitTests
             async Task withdrawalTask() => await walletService.WithdrawFundsAsync(withdrawal);
 
             // Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(withdrawalTask);
+            await Assert.ThrowsAsync<InsufficientBalanceException>(withdrawalTask);
 
 
             walletRepositoryMock.Verify(walletRepository => walletRepository.GetLastWalletEntryAsync(), Times.Once);
