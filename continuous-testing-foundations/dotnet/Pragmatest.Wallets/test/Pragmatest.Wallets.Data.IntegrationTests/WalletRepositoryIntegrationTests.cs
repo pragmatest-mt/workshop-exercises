@@ -13,12 +13,16 @@ namespace Pragmatest.Wallets.Data.IntegrationTests
         [Fact]
         public async Task GetLastWalletEntryAsync_NoEntries_ReturnsNull()
         {
-            // Arrange 
+            //// Arrange 
+
+            // Setup In-Memory Database at desired state 
+
             DbContextOptions<WalletContext> dbContextOptions = new DbContextOptionsBuilder<WalletContext>()
                 .UseInMemoryDatabase(databaseName: "GetLastWalletEntryAsync_NoEntries_ReturnsNull")
                 .Options;
 
-            // Act
+            //// Act
+            
             WalletEntry walletEntry;
             using (WalletContext context = new WalletContext(dbContextOptions))
             {
@@ -26,14 +30,18 @@ namespace Pragmatest.Wallets.Data.IntegrationTests
                 walletEntry = await walletRepository.GetLastWalletEntryAsync();
             }
 
-            // Assert
+            /// Assert
+            
             Assert.Null(walletEntry);
         }
 
         [Fact]
         public async Task GetLastWalletEntryAsync_SingleEntry_ReturnsTheEntry()
         {
-            // Arrange 
+            //// Arrange 
+
+            // Setup In-Memory Database at desired state 
+
             DbContextOptions<WalletContext> dbContextOptions = new DbContextOptionsBuilder<WalletContext>()
                 .UseInMemoryDatabase(databaseName: "GetLastWalletEntryAsync_SingleEntry_ReturnsTheEntry")
                 .Options;
@@ -45,7 +53,8 @@ namespace Pragmatest.Wallets.Data.IntegrationTests
                 context.SaveChanges();
             }
 
-            // Act
+            //// Act
+            
             WalletEntry actualEntry;
             using (WalletContext context = new WalletContext(dbContextOptions))
             {
@@ -53,7 +62,8 @@ namespace Pragmatest.Wallets.Data.IntegrationTests
                 actualEntry = await walletRepository.GetLastWalletEntryAsync();
             }
 
-            // Assert
+            //// Assert
+            
             Assert.NotNull(actualEntry);
             actualEntry.ShouldCompare(expectedEntry);
         }
@@ -61,7 +71,10 @@ namespace Pragmatest.Wallets.Data.IntegrationTests
         [Fact]
         public async Task GetLastWalletEntryAsync_MultipleEntries_ReturnsTheMostRecentEntry()
         {
-            // Arrange 
+            //// Arrange 
+
+            // Setup In-Memory Database at desired state 
+
             DbContextOptions<WalletContext> dbContextOptions = new DbContextOptionsBuilder<WalletContext>()
                 .UseInMemoryDatabase(databaseName: "GetLastWalletEntryAsync_MultipleEntries_ReturnsTheMostRecentEntry")
                 .Options;
@@ -75,7 +88,8 @@ namespace Pragmatest.Wallets.Data.IntegrationTests
                 context.SaveChanges();
             }
 
-            // Act
+            //// Act
+            
             WalletEntry actualEntry;
             using (WalletContext context = new WalletContext(dbContextOptions))
             {
@@ -83,7 +97,7 @@ namespace Pragmatest.Wallets.Data.IntegrationTests
                 actualEntry = await walletRepository.GetLastWalletEntryAsync();
             }
 
-            // Assert
+            //// Assert
             Assert.NotNull(actualEntry);
             actualEntry.ShouldCompare(expectedEntry);
         }
@@ -91,20 +105,28 @@ namespace Pragmatest.Wallets.Data.IntegrationTests
         [Fact]
         public async Task InsertWalletAsync_NoEntries_SingleWalletEntry()
         {
-            // Arrange 
+            //// Arrange 
+
+            // Setup In-Memory Database at desired state 
+
             DbContextOptions<WalletContext> dbContextOptions = new DbContextOptionsBuilder<WalletContext>()
                 .UseInMemoryDatabase(databaseName: "InsertWalletAsync_NoEntries_SingleWalletEntry")
                 .Options;
 
-            // Act
+            // Initialize Entry 
+
             WalletEntry expectedEntry = new WalletEntry { Id = Guid.NewGuid().ToString(), EventTime = DateTime.UtcNow, Amount = 10, BalanceBefore = 0 };
+
+            //// Act
+
             using (WalletContext context = new WalletContext(dbContextOptions))
             {
                 IWalletRepository walletRepository = new WalletRepository(context);
                 await walletRepository.InsertWalletEntryAsync(expectedEntry);
             }
 
-            // Assert
+            //// Assert
+            
             DbSet<WalletEntry> actualWalletEntries;
             using (WalletContext context = new WalletContext(dbContextOptions))
             {
@@ -116,7 +138,10 @@ namespace Pragmatest.Wallets.Data.IntegrationTests
         [Fact]
         public async Task InsertWalletAsync_PreviousWalletEntries_NewWalletEntry()
         {
-            // Arrange 
+            //// Arrange 
+
+            // Setup In-Memory Database at desired state 
+
             DbContextOptions<WalletContext> dbContextOptions = new DbContextOptionsBuilder<WalletContext>()
                 .UseInMemoryDatabase(databaseName: "InsertWalletAsync_PreviousWalletEntries_NewWalletEntry")
                 .Options;
@@ -131,15 +156,20 @@ namespace Pragmatest.Wallets.Data.IntegrationTests
                 context.SaveChanges();
             }
 
-            // Act
+            // Initialize Entry
+
             WalletEntry expectedNewEntry = new WalletEntry { Id = Guid.NewGuid().ToString(), EventTime = DateTime.UtcNow, Amount = 10, BalanceBefore = 0 };
+
+            //// Act
+
             using (WalletContext context = new WalletContext(dbContextOptions))
             {
                 IWalletRepository walletRepository = new WalletRepository(context);
                 await walletRepository.InsertWalletEntryAsync(expectedNewEntry);
             }
 
-            // Assert
+            //// Assert
+            
             DbSet<WalletEntry> actualWalletEntries;
             using (WalletContext context = new WalletContext(dbContextOptions))
             {
@@ -154,13 +184,20 @@ namespace Pragmatest.Wallets.Data.IntegrationTests
         [Fact]
         public async Task InsertWalletAsync_MissingId_ThrowsInvalidOperationException()
         {
-            // Arrange 
+            //// Arrange 
+
+            // Setup In-Memory Database at desired state 
+
             DbContextOptions<WalletContext> dbContextOptions = new DbContextOptionsBuilder<WalletContext>()
                 .UseInMemoryDatabase(databaseName: "InsertWalletAsync_MissingId_ThrowsInvalidOperationException")
                 .Options;
 
-            // Act / Assert
+            // Initialize Entry
+
             WalletEntry missingIdEntry = new WalletEntry { Id = null, EventTime = DateTime.UtcNow, Amount = 10, BalanceBefore = 0 };
+
+            //// Act / Assert
+            
             using (WalletContext context = new WalletContext(dbContextOptions))
             {
                 IWalletRepository walletRepository = new WalletRepository(context);
@@ -173,7 +210,10 @@ namespace Pragmatest.Wallets.Data.IntegrationTests
         [Fact]
         public async Task InsertWalletAsync_DuplicateId_ThrowsArgumentException()
         {
-            // Arrange 
+            //// Arrange 
+            
+            // Setup In-Memory Database at desired state 
+
             DbContextOptions<WalletContext> dbContextOptions = new DbContextOptionsBuilder<WalletContext>()
                 .UseInMemoryDatabase(databaseName: "InsertWalletAsync_DuplicateId_ThrowsArgumentException")
                 .Options;
@@ -187,8 +227,12 @@ namespace Pragmatest.Wallets.Data.IntegrationTests
                 context.SaveChanges();
             }
 
-            // Act / Assert
+            // Initialize Entry
+
             WalletEntry duplicateEntry = new WalletEntry { Id = "IAmDuplicate", EventTime = DateTime.UtcNow, Amount = 10, BalanceBefore = 0 };
+
+            //// Act / Assert
+
             using (WalletContext context = new WalletContext(dbContextOptions))
             {
                 IWalletRepository walletRepository = new WalletRepository(context);
