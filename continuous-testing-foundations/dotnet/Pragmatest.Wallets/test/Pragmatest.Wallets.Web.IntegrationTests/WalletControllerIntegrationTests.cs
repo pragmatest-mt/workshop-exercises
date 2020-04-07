@@ -216,11 +216,11 @@ namespace Pragmatest.Wallets.Web.IntegrationTests
             walletServiceMock.VerifyNoOtherCalls();
         }
 
-        [Theory]
-        [InlineData(1000)]
-        public async Task Withdrawal_WithdrawalInsufficientBalanceException_ReturnsBadRequest(int withdrawalAmount)
+        [Fact]
+        public async Task Withdrawal_WithdrawalInsufficientBalanceException_ReturnsBadRequest()
         {
             // Arrange
+            int withdrawalAmount = 1000;
             string endpoint = "Wallet/Withdraw";
 
             Mock<IWalletService> walletServiceMock = new Mock<IWalletService>();
