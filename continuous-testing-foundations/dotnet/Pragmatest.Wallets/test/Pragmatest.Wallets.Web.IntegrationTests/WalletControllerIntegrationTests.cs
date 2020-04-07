@@ -77,11 +77,11 @@ namespace Pragmatest.Wallets.Web.IntegrationTests
             Mock<IWalletService> walletServiceMock = new Mock<IWalletService>();
 
             Balance postDepositBalance = new Balance() { Amount = postDepositBalanceAmount };
-            Deposit expectedDeposit = new Deposit { Amount = depositAmount };
+            Deposit deposit = new Deposit { Amount = depositAmount };
             
             walletServiceMock
              .Setup(walletService => 
-                walletService.DepositFundsAsync(It.Is<Deposit>(actualDeposit => _comparer.Compare(expectedDeposit, actualDeposit).AreEqual))
+                walletService.DepositFundsAsync(It.Is<Deposit>(actualDeposit => _comparer.Compare(deposit, actualDeposit).AreEqual))
              )
              .Returns(Task.FromResult(postDepositBalance));
 
@@ -114,7 +114,7 @@ namespace Pragmatest.Wallets.Web.IntegrationTests
             actualBalanceResponse.ShouldCompare(expectedBalanceResponse);
 
             walletServiceMock.Verify(walletService => walletService.DepositFundsAsync(It.Is<Deposit>(
-                    actualDeposit => _comparer.Compare(expectedDeposit, actualDeposit).AreEqual)
+                    actualDeposit => _comparer.Compare(deposit, actualDeposit).AreEqual)
                 ), Times.Once);
             walletServiceMock.VerifyNoOtherCalls();
         }
