@@ -7,7 +7,7 @@ namespace Pragmatest.Wallets.Extensions
     {
         public static IServiceCollection RegisterWalletService(this IServiceCollection services)
         {
-            return services.AddScoped<IWalletService, WalletService>();
+            return services.AddTransient<IWalletService, WalletService>();
         }
     }
 }
