@@ -12,7 +12,7 @@ This is a course aimed at enabling teams to start introducing testing into their
 ### Java
 A sample Maven structured application is used for demo purposes. This uses technologies such as Springboot, JUnit 5 and Mockito. 
 
-#### Usage 
+##### Usage 
 The application can be deployed using the following command. Once initialized, the application is running on localhost on port 8080.
 
 ```bash
@@ -25,6 +25,24 @@ All the unit tests can be executed using the command below.
 ```bash
 mvn test
 ```
+
+### .NET
+A sample MVC application used for demo purposes. This uses technologies such as MS Service Collection, MS Entity Framework, XUnit, Docker and Moq. 
+
+##### Usage 
+This application can be depoloyed using the following Docker command. Execute this command from the .sln folder. 
+
+```bash
+docker build -f src/Pragmatest.Wallets.Web/Dockerfile .
+```
+
+A Docker Image is created. Run this image in a Docker container using the following command:
+
+```bash
+docker run -p 5000:80 {docker-image-id}
+```
+
+Once this is up and running, use Swagger to access the API Controllers on http://localhost:5000/swagger/index.html
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
