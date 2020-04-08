@@ -5,11 +5,12 @@ WORKDIR /app
 EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
-WORKDIR /src
-COPY ["Pragmatest.Wallets.Web/Pragmatest.Wallets.Web.csproj", "Pragmatest.Wallets.Web/"]
-RUN dotnet restore "Pragmatest.Wallets.Web/Pragmatest.Wallets.Web.csproj"
+WORKDIR /sln
+COPY ["src/Pragmatest.Wallets.Web/Pragmatest.Wallets.Web.csproj", "sln/Pragmatest.Wallets.Web/"]
+
+RUN dotnet restore "sln/Pragmatest.Wallets.Web/Pragmatest.Wallets.Web.csproj"
 COPY . .
-WORKDIR "/src/Pragmatest.Wallets.Web"
+WORKDIR "/sln/src/Pragmatest.Wallets.Web"
 RUN dotnet build "Pragmatest.Wallets.Web.csproj" -c Release -o /app/build
 
 FROM build AS publish
