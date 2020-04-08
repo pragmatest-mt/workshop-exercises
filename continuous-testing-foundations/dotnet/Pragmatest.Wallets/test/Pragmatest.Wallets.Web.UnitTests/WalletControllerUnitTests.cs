@@ -24,6 +24,16 @@ namespace Pragmatest.Wallets.Web.UnitTests
 
             // Setup Mocks
 
+            Mock<ILogger<WalletController>> loggerMock = new Mock<ILogger<WalletController>>();
+            ILogger<WalletController> logger = loggerMock.Object;
+
+            Mock<IMapper> mapperMock = new Mock<IMapper>();
+            mapperMock
+                .Setup(mapper => mapper.Map<BalanceResponse>(currentBalance))
+                .Returns(expectedBalanceResponse);
+
+            IMapper mapper = mapperMock.Object;
+
             Mock<IWalletService> walletServiceMock = new Mock<IWalletService>();
 
             walletServiceMock
@@ -31,12 +41,6 @@ namespace Pragmatest.Wallets.Web.UnitTests
                 .Returns(Task.FromResult(currentBalance));
 
             IWalletService walletService = walletServiceMock.Object;
-
-            IMapper mapper = Mock.Of<IMapper>(mapper =>
-                mapper.Map<BalanceResponse>(currentBalance) == expectedBalanceResponse
-            );
-
-            ILogger<WalletController> logger = Mock.Of<ILogger<WalletController>>();
 
             // Initialize SUT            
 
@@ -105,7 +109,6 @@ namespace Pragmatest.Wallets.Web.UnitTests
 
             walletServiceMock.Verify(walletService => walletService.DepositFundsAsync(deposit), Times.Once);
             walletServiceMock.VerifyNoOtherCalls();
-
         }
 
         [Fact]
