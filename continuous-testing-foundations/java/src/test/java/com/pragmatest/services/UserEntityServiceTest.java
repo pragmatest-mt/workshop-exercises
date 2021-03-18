@@ -1,6 +1,5 @@
 package com.pragmatest.services;
 
-import com.pragmatest.matchers.UserEntityMatcher;
 import com.pragmatest.models.User;
 import com.pragmatest.models.UserEntity;
 import com.pragmatest.repositories.UserRepository;
@@ -11,12 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.List;
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
@@ -32,109 +26,40 @@ public class UserEntityServiceTest {
     @Autowired
     ModelMapper modelMapper;
 
+    // Under 18 --> Inactive, Over 18 --> Active
     @Test
-    void testSaveUserValidUser() {
-        // Arrange
-        UserEntity inputUserEntity = new UserEntity("John Smith", "London", 20);
-        UserEntity outputUserEntity = new UserEntity(1L, "John Smith", "London", 20);
-        when(userMockRepository.save(argThat(new UserEntityMatcher(inputUserEntity)))).thenReturn(outputUserEntity);
+    public void testSaveUserUnder18(){
 
-        User serviceUserInput = new User("John Smith", "London", 20);
-        User serviceUserOutput = new User(1L, "John Smith", "London", 20);
+        User userToBeSaved = new User("Joe Borg", "Mosta", 17);
 
-        // Act
-        Optional<User> actualUser = userService.saveUser(serviceUserInput);
+        User expectedSavedUser = new User(1L, "Joe Borg", "Mosta", 17);
+        expectedSavedUser.setIsActive(false);
 
-        // Assert
-        assertFalse(actualUser.isEmpty());
-        assertThat(actualUser.get()).isEqualToComparingFieldByField(serviceUserOutput);
+        UserEntity outputUserEntity = new UserEntity(1L, "Joe Borg", "Mosta", 17, false);
+        when(userMockRepository.save(any(UserEntity.class))).thenReturn(outputUserEntity);
 
-        verify(userMockRepository, times(1)).save(argThat(new UserEntityMatcher(inputUserEntity)));
+
+        User savedUser = userService.saveUser(userToBeSaved);
+
+        assertThat(savedUser).isEqualToComparingFieldByField(expectedSavedUser);
+        verify(userMockRepository, times(1)).save(any(UserEntity.class));
     }
 
     @Test
-    void testSaveUserUnderAgeUser() {
-        // Arrange
-        UserEntity newUserEntity = new UserEntity("John Smith", "London", 17);
-        when(userMockRepository.save(newUserEntity)).thenReturn(newUserEntity);
+    public void testSaveUserOver18() {
 
-        User user = modelMapper.map(newUserEntity, User.class);
+        User userToBeSaved = new User("Joe Borg", "Mosta", 18);
 
-        // Act
-        Optional<User> returnedNewUser = userService.saveUser(user);
+        User expectedSavedUser = new User(1L, "Joe Borg", "Mosta", 18);
+        expectedSavedUser.setIsActive(true);
 
-        //Assert
-        assertEquals(returnedNewUser, Optional.empty());
+        UserEntity outputUserEntity = new UserEntity(1L, "Joe Borg", "Mosta", 18, true);
+        when(userMockRepository.save(any(UserEntity.class))).thenReturn(outputUserEntity);
 
-        verify(userMockRepository, times(0)).save(any(UserEntity.class));
+        User savedUser = userService.saveUser(userToBeSaved);
+
+        assertThat(savedUser).isEqualToComparingFieldByField(expectedSavedUser);
+
+        verify(userMockRepository, times(1)).save(any(UserEntity.class));
     }
-
-    @Test
-    void testGetUserByIdValidId() {
-        //Arrange
-        UserEntity newUserEntity = new UserEntity(1L, "John Smith", "London", 25);
-        when(userMockRepository.findById(1L)).thenReturn(Optional.of(newUserEntity));
-
-        User expectedUser = modelMapper.map(newUserEntity, User.class);
-
-        // Act
-        Optional<User> actualUser = userService.getUserById(1L);
-
-        //Assert
-        assertFalse(actualUser.isEmpty());
-        assertThat(actualUser.get()).isEqualToComparingFieldByField(expectedUser);
-        verify(userMockRepository, times(1)).findById(1L);
-    }
-
-    @Test
-    void testGetUserByIdInvalidId() {
-        // Arrange
-        when(userMockRepository.findById(1L)).thenReturn(Optional.empty());
-
-        // Act
-        Optional<User> returnedUser = userService.getUserById(1L);
-
-        // Assert
-        assertTrue(returnedUser.isEmpty());
-
-        verify(userMockRepository, times(1)).findById(1L);
-    }
-
-    @Test
-    void testDeleteUserByIdValidId() {
-        // Act
-        userService.deleteUserById(1L);
-
-        // Assert
-        verify(userMockRepository, times(1)).deleteById(1L);
-    }
-
-    @Test
-    void testGetAllUsersValidUsers() {
-        //Arrange
-        List<UserEntity> usersList = List.of(
-            new UserEntity("John Smith", "London", 45),
-            new UserEntity("Mary Jones", "Manchester", 60)
-        );
-
-        when(userMockRepository.findAll()).thenReturn(usersList);
-
-        User expectedUser1 = new User("John Smith", "London", 45);
-        User expectedUser2 = new User("Mary Jones", "Manchester", 60);
-
-        // Act
-        List<User> actualUsersList = userService.getAllUsers();
-
-        // Assert
-        assertThat(actualUsersList)
-                .extracting(User::getFullName, User::getLocality, User::getAge)
-                .containsExactly(
-                        tuple(expectedUser1.getFullName(), expectedUser1.getLocality(), expectedUser1.getAge()),
-                        tuple(expectedUser2.getFullName(), expectedUser2.getLocality(), expectedUser2.getAge())
-                );
-
-        verify(userMockRepository, times(1)).findAll();
-    }
-
-
 }

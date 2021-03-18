@@ -14,20 +14,16 @@ public class UserEntity {
     private String fullName;
     private String locality;
     private int age;
+    private Boolean isActive;
 
-    public UserEntity() {
-        this(null, null, null, 0);
-    }
+    public UserEntity() {}
 
-    public UserEntity(String fullName, String locality, int age) {
-        this(null, fullName, locality, age);
-    }
-
-    public UserEntity(Long id, String fullName, String locality, int age) {
+    public UserEntity(Long id, String fullName, String locality, int age, Boolean isActive) {
         this.id = id;
         this.fullName = fullName;
         this.locality = locality;
         this.age = age;
+        this.setIsActive(isActive);
     }
 
     public Long getId() {
@@ -61,4 +57,8 @@ public class UserEntity {
     public void setLocality(String locality) {
         this.locality = locality;
     }
+
+    public Boolean getIsActive() { return isActive; }
+
+    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
 }

@@ -26,58 +26,38 @@ public class UserServiceImpl implements UserService {
     private ModelMapper modelMapper;
 
     @Override
-    public Optional<User> getUserById(Long id) {
-        Optional<UserEntity> userEntityInDb = userRepository.findById(id);
+    public User saveUser(User user) {
 
-        if (userEntityInDb.isEmpty()){
-            return Optional.empty();
+        int age = user.getAge();
+
+        if (age < 18) {
+            user.setIsActive(false);
+        } else {
+            user.setIsActive(true);
         }
 
-        UserEntity userEntity = userEntityInDb.get();
+        UserEntity userEntity = modelMapper.map(user, UserEntity.class);
+        userEntity = userRepository.save(userEntity);
 
-        User user = modelMapper.map(userEntity, User.class);
+        User savedUser = modelMapper.map(userEntity, User.class);
 
-        return Optional.of(user);
+        return savedUser;
+    }
+
+    @Override
+    public User getUserById(Long id) {
+        //TODO
+        return null;
     }
 
     @Override
     public List<User> getAllUsers() {
-
-        List<UserEntity> userEntities = userRepository.findAll();
-
-        Type returnType = new TypeToken<List<User>>() {}.getType();
-
-        List<User> users = modelMapper.map(userEntities, returnType);
-
-        return users;
-    }
-
-    @Override
-    public Optional<User> saveUser(User user) {
-        int age = user.getAge();
-        boolean isAdult = userUtils.isAdult(age);
-
-        Optional<UserEntity> savedUserEntity = Optional.empty();
-
-        UserEntity userEntity = modelMapper.map(user, UserEntity.class);
-
-        if (isAdult) {
-            savedUserEntity = Optional.of(userRepository.save(userEntity));
-        }
-
-        if (savedUserEntity.isEmpty()) {
-            return Optional.empty();
-        }
-
-        userEntity = savedUserEntity.get();
-
-        User savedUser = modelMapper.map(userEntity, User.class);
-
-        return Optional.of(savedUser);
+        //TODO
+        return null;
     }
 
     @Override
     public void deleteUserById(Long id) {
-        userRepository.deleteById(id);
+        //TODO
     }
 }
