@@ -8,8 +8,6 @@ public class UserRequest {
 
     private String locality;
 
-    @Min(value = 1, message = "Age cannot be less than 1")
-    @Max(value = 122, message = "Age cannot be more than 122")
     private int age;
 
     public UserRequest() {

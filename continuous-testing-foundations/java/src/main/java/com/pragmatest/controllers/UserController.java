@@ -25,17 +25,9 @@ public class UserController {
         return null;
     }
 
-    @PostMapping("/users")
-    @ResponseStatus(HttpStatus.CREATED)
-    UserResponse newUser(@Valid @RequestBody UserRequest userRequest) {
-
-        User user = modelMapper.map(userRequest, User.class);
-
-        User savedUser = userService.saveUser(user);
-
-        UserResponse userResponse = modelMapper.map(savedUser, UserResponse.class);
-
-        return userResponse;
+    UserResponse newUser(@RequestBody UserRequest userRequest) {
+        //TODO
+        return null;
     }
 
     UserResponse findOne(@PathVariable Long id) {

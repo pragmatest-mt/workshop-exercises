@@ -6,7 +6,6 @@ public class User {
     private String fullName;
     private String locality;
     private int age;
-    private Boolean isActive;
 
     public User() {
         this(null, null, null, 0);
@@ -54,8 +53,4 @@ public class User {
     public void setAge(int age) {
         this.age = age;
     }
-
-    public Boolean getIsActive() { return isActive; }
-
-    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
 }

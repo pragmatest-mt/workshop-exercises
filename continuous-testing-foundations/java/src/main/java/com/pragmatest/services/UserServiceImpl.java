@@ -27,21 +27,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User saveUser(User user) {
-
-        int age = user.getAge();
-
-        if (age < 18) {
-            user.setIsActive(false);
-        } else {
-            user.setIsActive(true);
-        }
-
-        UserEntity userEntity = modelMapper.map(user, UserEntity.class);
-        userEntity = userRepository.save(userEntity);
-
-        User savedUser = modelMapper.map(userEntity, User.class);
-
-        return savedUser;
+        //TODO
+        return null;
     }
 
     @Override
