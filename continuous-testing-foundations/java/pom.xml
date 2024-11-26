@@ -10,7 +10,7 @@
 
     <properties>
         <junit-jupiter.version>5.11.3</junit-jupiter.version>
-        <springfox-swagger2.version>2.9.2</springfox-swagger2.version>
+        <springfox-swagger2.version>2.10.0</springfox-swagger2.version>
     </properties>
 
     <parent>
