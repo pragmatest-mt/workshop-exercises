@@ -1,6 +1,5 @@
 package com.pragmatest.repositories;
 
-import com.pragmatest.models.User;
 import com.pragmatest.models.UserEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
