@@ -33,4 +33,4 @@ jobs:
         run: mvn clean package --file continuous-testing-foundations/java/pom.xml
 
       - name: Run unit tests
-        run: mvn test
+        run: mvn -f continuous-testing-foundations/java/pom.xml test
